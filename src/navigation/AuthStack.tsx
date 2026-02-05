@@ -1,8 +1,8 @@
 import React from 'react';
 
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import EmailScreen from '../screens/EmailScreen';
-import OtpScreen from '../screens/OtpScreen';
+import EmailScreen from '../screens/auth/EmailScreen';
+import OtpScreen from '../screens/auth/OtpScreen';
 
 export type AuthStackParamList = {
   email: undefined;

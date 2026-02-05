@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Text, View } from 'react-native';
 
-export default class EmailScreen extends Component {
+export default class ExploreScreen extends Component {
   render() {
     return (
       <View>
