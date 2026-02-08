@@ -11,6 +11,7 @@ const Colors = {
     success: '#27AE60',
 
     border: '#E2E4EA',
+    borderSecondary: '#bab8b8',
     inputBackground: '#FFFFFF',
   },
 

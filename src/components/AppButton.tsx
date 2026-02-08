@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: Colors.light.primary,
     paddingVertical: Spacing.md,
-    borderRadius: Radius.pill,
+    borderRadius: Radius.md,
     alignItems: 'center',
   },
 });
