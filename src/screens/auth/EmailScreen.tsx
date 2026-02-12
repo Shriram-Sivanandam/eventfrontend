@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import Screen from '../../components/Screen';
 import AppText from '../../components/AppText';
 import AppInput from '../../components/AppInput';
@@ -12,13 +12,14 @@ import { Radius } from '../../constants/layout';
 export default function EmailScreen() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState('');
   const navigation = useNavigation<any>();
 
   const isValidEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
 
   const requestOtp = async () => {
     if (!isValidEmail(email)) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      setEmailError('Please enter a valid email address.');
       return;
     }
 
@@ -27,7 +28,7 @@ export default function EmailScreen() {
       await api.post('/auth/request-otp', { email });
       navigation.navigate('otp', { email });
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again later.');
+      setEmailError('Something went wrong. Please try again later.');
       console.error(error);
     } finally {
       setLoading(false);
@@ -61,9 +62,11 @@ export default function EmailScreen() {
           autoCorrect={false}
         />
 
-        <View style={styles.spacer} />
+        <AppText variant="caption" style={styles.errorText}>
+          {emailError}
+        </AppText>
 
-        <AppButton title="Continue" onPress={requestOtp} />
+        <AppButton title="Continue" loading={loading} onPress={requestOtp} />
       </View>
     </Screen>
   );
@@ -81,8 +84,9 @@ const styles = StyleSheet.create({
   form: {
     width: '100%',
   },
-  spacer: {
-    height: 20,
+  errorText: {
+    color: Colors.light.danger,
+    marginBottom: 20,
   },
   borderCont: {
     display: 'flex',

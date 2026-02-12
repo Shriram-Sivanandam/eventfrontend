@@ -5,7 +5,8 @@ import AppText from '../../components/AppText';
 import AppInput from '../../components/AppInput';
 import AppButton from '../../components/AppButton';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../context/AuthContext';
+import { useRoute } from '@react-navigation/native';
 import api from '../../api/client';
 import Colors from '../../constants/colors';
 
@@ -14,8 +15,8 @@ export default function OtpScreen() {
   const [loading, setLoading] = useState(false);
   const [otpError, setOtpError] = useState('');
   const route = useRoute<any>();
-  const navigation = useNavigation<any>();
   const { email } = route.params;
+  const { setToken } = useAuth();
 
   const verifyOtp = async () => {
     if (otp.length < 6) {
@@ -27,10 +28,7 @@ export default function OtpScreen() {
     try {
       const res = await api.post('/auth/verify-otp', { email, otp });
       await AsyncStorage.setItem('token', res.data.token);
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'home' }],
-      });
+      setToken(res.data.token);
     } catch (error) {
       setOtpError('The code is incorrect or has expired.');
       console.log(error);
@@ -75,7 +73,11 @@ export default function OtpScreen() {
           {otpError}
         </AppText>
 
-        <AppButton title="Verify & Continue" onPress={verifyOtp} />
+        <AppButton
+          title="Verify & Continue"
+          loading={loading}
+          onPress={verifyOtp}
+        />
 
         <View style={styles.resendContainer}>
           <AppText variant="caption">Didn't receive a code? </AppText>

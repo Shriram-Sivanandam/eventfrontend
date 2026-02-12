@@ -1,24 +1,30 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
+import { TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
 import Colors from '../constants/colors';
 import { Spacing, Radius } from '../constants/layout';
 import AppText from './AppText';
 
 type Props = {
   title: string;
+  loading?: boolean;
   onPress: () => void;
 };
 
-const AppButton = ({ title, onPress }: Props) => {
+const AppButton = ({ title, loading, onPress }: Props) => {
   return (
     <TouchableOpacity
       activeOpacity={0.85}
       onPress={onPress}
       style={styles.button}
+      disabled={loading}
     >
-      <AppText variant="subtitle" color="#fff">
-        {title}
-      </AppText>
+      {loading ? (
+        <ActivityIndicator color="#fff" />
+      ) : (
+        <AppText variant="subtitle" color="#fff">
+          {title}
+        </AppText>
+      )}
     </TouchableOpacity>
   );
 };
