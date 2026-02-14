@@ -7,57 +7,66 @@ import { Spacing, Radius, Shadows } from '../constants/layout';
 export default function EventCard({ event }: any) {
   const startDate = new Date(event.event_start);
   const day = startDate.getDate();
+  const dayShort = startDate.toLocaleDateString('en-US', { weekday: 'short' });
+  const time = startDate.toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
   const month = startDate
     .toLocaleString('en-US', { month: 'short' })
     .toUpperCase();
 
   return (
-    <View style={styles.card}>
-      <View style={styles.dateContainer}>
-        <AppText variant="subtitle" style={styles.monthText}>
-          {month}
-        </AppText>
-        <AppText variant="title" style={styles.dayText}>
-          {day}
-        </AppText>
-      </View>
-
-      <View style={styles.content}>
-        <AppText variant="subtitle" style={styles.title} numberOfLines={1}>
-          {event.title}
-        </AppText>
-
-        <View style={styles.infoRow}>
-          {event.location && (
-            <View style={styles.badge}>
-              <AppText variant="caption" style={styles.badgeText}>
-                {event.location}
-              </AppText>
-            </View>
-          )}
-
-          {event.price > 0 ? (
-            <View style={[styles.badge, styles.priceBadge]}>
-              <AppText variant="caption" style={styles.priceText}>
-                ₹{event.price}
-              </AppText>
-            </View>
-          ) : (
-            <View style={[styles.badge, styles.freeBadge]}>
-              <AppText variant="caption" style={styles.freeText}>
-                FREE
-              </AppText>
-            </View>
-          )}
+    <View>
+      <View style={styles.card}>
+        <View style={styles.dateContainer}>
+          <AppText variant="subtitle" style={styles.monthText}>
+            {month}
+          </AppText>
+          <AppText variant="title" style={styles.dayText}>
+            {day}
+          </AppText>
         </View>
 
-        <AppText variant="caption" color={Colors.light.secondaryText}>
-          {startDate.toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-        </AppText>
+        <View style={styles.content}>
+          <AppText variant="subtitle" style={styles.title} numberOfLines={1}>
+            {event.title}
+          </AppText>
+
+          <View style={styles.infoRow}>
+            {event.location && (
+              <View style={styles.badge}>
+                <AppText variant="caption" style={styles.badgeText}>
+                  {event.location}
+                </AppText>
+              </View>
+            )}
+
+            {event.price > 0 ? (
+              <View style={[styles.badge, styles.priceBadge]}>
+                <AppText variant="caption" style={styles.priceText}>
+                  ₹{event.price}
+                </AppText>
+              </View>
+            ) : (
+              <View style={[styles.badge, styles.freeBadge]}>
+                <AppText variant="caption" style={styles.freeText}>
+                  FREE
+                </AppText>
+              </View>
+            )}
+          </View>
+        </View>
       </View>
+      <AppText variant="subtitle" style={styles.title} numberOfLines={1}>
+        {event.title}
+      </AppText>
+      <AppText variant="caption" color={Colors.light.secondaryText}>
+        {dayShort}, {day} {month}, {time}
+      </AppText>
+      <AppText variant="caption" color={Colors.light.secondaryText}>
+        {event.location}
+      </AppText>
     </View>
   );
 }
@@ -93,7 +102,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '700',
-    marginBottom: 6,
   },
   infoRow: {
     flexDirection: 'row',
