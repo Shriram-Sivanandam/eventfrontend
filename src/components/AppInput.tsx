@@ -1,15 +1,25 @@
 import React from 'react';
-import { TextInput, StyleSheet, TextInputProps } from 'react-native';
+import {
+  TextInput,
+  StyleSheet,
+  TextInputProps,
+  StyleProp,
+  TextStyle,
+} from 'react-native';
 import Colors from '../constants/colors';
 import { Spacing, Radius } from '../constants/layout';
 import { Typography } from '../constants/typography';
 
-const AppInput = (props: TextInputProps) => {
+interface AppInputProps extends TextInputProps {
+  style?: StyleProp<TextStyle>;
+}
+
+const AppInput = ({ style, ...props }: AppInputProps) => {
   return (
     <TextInput
       {...props}
       placeholderTextColor={Colors.light.secondaryText}
-      style={styles.input}
+      style={[styles.input, style]}
     />
   );
 };
