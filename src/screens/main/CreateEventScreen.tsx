@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Screen from '../../components/Screen';
 import AppText from '../../components/AppText';
 import AppInput from '../../components/AppInput';
@@ -8,15 +8,18 @@ import api from '../../api/client';
 import { useNavigation } from '@react-navigation/native';
 import { Spacing } from '../../constants/layout';
 import Colors from '../../constants/colors';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 
 export default function CreateEventScreen() {
   const navigation = useNavigation<any>();
+  const [showPicker, setShowPicker] = useState(false);
 
   const [form, setForm] = useState({
     title: '',
     description: '',
     location: '',
-    date: '',
+    date: new Date(),
     price: '',
     capacity: '',
   });
@@ -62,6 +65,49 @@ export default function CreateEventScreen() {
     }
   };
 
+  const onDateChange = (event: any, selectedDate?: Date) => {
+    if (event.type === 'dismissed') {
+      return;
+    }
+    setShowPicker(false);
+    if (selectedDate) {
+      setForm(prev => ({ ...prev, date: selectedDate }));
+    }
+  };
+
+  const openDatePicker = () => {
+    DateTimePickerAndroid.open({
+      value: form.date || new Date(),
+      mode: 'date',
+      is24Hour: true,
+      minimumDate: new Date(),
+      onChange: (_event, selectedDate) => {
+        if (selectedDate) {
+          setForm(prev => ({
+            ...prev,
+            date: selectedDate,
+          }));
+        }
+      },
+    });
+  };
+
+  const openTimePicker = () => {
+    DateTimePickerAndroid.open({
+      value: form.date || new Date(),
+      mode: 'time',
+      is24Hour: true,
+      onChange: (_event, selectedDate) => {
+        if (selectedDate) {
+          setForm(prev => ({
+            ...prev,
+            date: selectedDate,
+          }));
+        }
+      },
+    });
+  };
+
   return (
     <Screen>
       <AppText variant="title">Create Event</AppText>
@@ -105,11 +151,48 @@ export default function CreateEventScreen() {
       <AppText variant="caption" style={styles.inputLabel}>
         Date
       </AppText>
-      <AppInput
-        placeholder="Date (YYYY-MM-DD HH:mm)"
-        value={form.date}
-        onChangeText={text => setForm(prev => ({ ...prev, date: text }))}
-      />
+
+      <View style={styles.dateTimeCont}>
+        <TouchableOpacity
+          onPress={openDatePicker}
+          style={styles.dateTimeInputs}
+        >
+          <AppInput
+            placeholder="Select date"
+            value={form.date ? form.date.toLocaleDateString('en-GB') : ''}
+            editable={false}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={openTimePicker}
+          style={styles.dateTimeInputs}
+        >
+          <AppInput
+            placeholder="Select time"
+            value={
+              form.date
+                ? form.date.toLocaleTimeString('en-GB', {
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : ''
+            }
+            editable={false}
+          />
+        </TouchableOpacity>
+      </View>
+
+      {showPicker && (
+        <DateTimePicker
+          value={form.date || new Date()}
+          mode="datetime"
+          display="default"
+          onChange={onDateChange}
+          minimumDate={new Date()}
+        />
+      )}
+
       <AppText variant="caption" color={Colors.light.danger}>
         {errors.date}
       </AppText>
@@ -154,5 +237,15 @@ const styles = StyleSheet.create({
   },
   createBtn: {
     marginVertical: Spacing.md,
+  },
+  dateTimeCont: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  dateTimeInputs: {
+    flex: 1,
   },
 });
