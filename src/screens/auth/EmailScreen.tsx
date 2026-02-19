@@ -56,7 +56,7 @@ export default function EmailScreen() {
         <AppInput
           value={email}
           onChangeText={setEmail}
-          placeholder="10-digit mobile number"
+          placeholder="Your Email ID"
           keyboardType="email-address"
           autoCapitalize="none"
           autoCorrect={false}
