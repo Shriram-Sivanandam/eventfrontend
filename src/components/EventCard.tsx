@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Pressable } from 'react-native';
 import AppText from './AppText';
 import Colors from '../constants/colors';
 import { Spacing, Radius, Shadows } from '../constants/layout';
+import { useNavigation } from '@react-navigation/native';
 
 export default function EventCard({ event }: any) {
+  const navigation = useNavigation<any>();
   const startDate = new Date(event.event_start);
   const day = startDate.getDate();
   const dayShort = startDate.toLocaleDateString('en-US', { weekday: 'short' });
@@ -17,7 +19,7 @@ export default function EventCard({ event }: any) {
     .toUpperCase();
 
   return (
-    <View>
+    <Pressable onPress={() => navigation.navigate('EventDetails', { event })}>
       <View style={styles.card}>
         <View style={styles.dateContainer}>
           <AppText variant="subtitle" style={styles.monthText}>
@@ -67,7 +69,7 @@ export default function EventCard({ event }: any) {
       <AppText variant="caption" color={Colors.light.secondaryText}>
         {event.location}
       </AppText>
-    </View>
+    </Pressable>
   );
 }
 
