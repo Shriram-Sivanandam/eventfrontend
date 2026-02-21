@@ -10,10 +10,12 @@ import { Spacing } from '../../constants/layout';
 import Colors from '../../constants/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
+import { launchImageLibrary } from 'react-native-image-picker';
 
 export default function CreateEventScreen() {
   const navigation = useNavigation<any>();
   const [showPicker, setShowPicker] = useState(false);
+  const [image, setImage] = useState<any>(null);
 
   const [form, setForm] = useState({
     title: '',
@@ -33,7 +35,21 @@ export default function CreateEventScreen() {
     capacity: '',
   });
 
+  const pickImage = async () => {
+    console.log('helloouuuu ');
+    const result = await launchImageLibrary({
+      mediaType: 'photo',
+      quality: 0.8,
+    });
+
+    if (result.assets?.length) {
+      setImage(result.assets[0]);
+      console.log('yuooooooo ', result.assets[0]);
+    }
+  };
+
   const validate = () => {
+    console.log('asdfasfasd ');
     const newErrors: any = {};
 
     if (!form.title) newErrors.title = 'Enter event title';
@@ -49,14 +65,27 @@ export default function CreateEventScreen() {
 
   const createEvent = async () => {
     if (!validate()) return;
+
+    const data = new FormData();
+
+    data.append('title', form.title);
+    data.append('description', form.description);
+    data.append('location', form.location);
+    data.append('event_start', form.date.toISOString());
+    data.append('price', form.price);
+    data.append('capacity', form.capacity);
+
+    if (image) {
+      data.append('image', {
+        uri: image.uri,
+        type: image.type,
+        name: image.fileName || 'photo.jpg',
+      });
+    }
+
     try {
-      await api.post('/events', {
-        title: form.title,
-        description: form.description,
-        location: form.location,
-        event_start: new Date(form.date).toISOString(),
-        price: Number(form.price || 0),
-        capacity: Number(form.capacity || 0),
+      await api.post('/events', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       navigation.goBack();
@@ -123,6 +152,8 @@ export default function CreateEventScreen() {
       <AppText variant="caption" color={Colors.light.danger}>
         {errors.title}
       </AppText>
+
+      <AppButton title="Add Image" onPress={pickImage} />
 
       <AppText variant="caption" style={styles.inputLabel}>
         Description
