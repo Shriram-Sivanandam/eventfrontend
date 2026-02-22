@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, Image } from 'react-native';
 import AppText from './AppText';
 import Colors from '../constants/colors';
 import { Spacing, Radius, Shadows } from '../constants/layout';
@@ -18,8 +18,17 @@ export default function EventCard({ event }: any) {
     .toLocaleString('en-US', { month: 'short' })
     .toUpperCase();
 
+  const IMAGE_BASE = 'http://10.0.2.2:8080';
+
   return (
     <Pressable onPress={() => navigation.navigate('EventDetails', { event })}>
+      {event.image_url && (
+        <Image
+          source={{ uri: `${IMAGE_BASE}${event.image_url}` }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+      )}
       <View style={styles.card}>
         <View style={styles.dateContainer}>
           <AppText variant="subtitle" style={styles.monthText}>
@@ -136,5 +145,11 @@ const styles = StyleSheet.create({
   freeText: {
     color: '#B45309',
     fontWeight: '700',
+  },
+  image: {
+    width: '100%',
+    height: 180,
+    borderRadius: 14,
+    marginBottom: 10,
   },
 });
