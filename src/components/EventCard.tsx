@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Pressable, Image } from 'react-native';
+import { StyleSheet, Pressable, Image, View } from 'react-native';
 import AppText from './AppText';
 import Colors from '../constants/colors';
 import { Spacing, Radius, Shadows } from '../constants/layout';
@@ -21,7 +21,10 @@ export default function EventCard({ event }: any) {
   const IMAGE_BASE = 'http://10.0.2.2:8080';
 
   return (
-    <Pressable onPress={() => navigation.navigate('EventDetails', { event })}>
+    <Pressable
+      onPress={() => navigation.navigate('EventDetails', { event })}
+      style={styles.mainCont}
+    >
       {event.image_url && (
         <Image
           source={{ uri: `${IMAGE_BASE}${event.image_url}` }}
@@ -29,64 +32,31 @@ export default function EventCard({ event }: any) {
           resizeMode="cover"
         />
       )}
-      <View style={styles.card}>
-        <View style={styles.dateContainer}>
-          <AppText variant="subtitle" style={styles.monthText}>
-            {month}
-          </AppText>
-          <AppText variant="title" style={styles.dayText}>
-            {day}
-          </AppText>
-        </View>
-
-        <View style={styles.content}>
-          <AppText variant="subtitle" style={styles.title} numberOfLines={1}>
-            {event.title}
-          </AppText>
-
-          <View style={styles.infoRow}>
-            {event.location && (
-              <View style={styles.badge}>
-                <AppText variant="caption" style={styles.badgeText}>
-                  {event.location}
-                </AppText>
-              </View>
-            )}
-
-            {event.price > 0 ? (
-              <View style={[styles.badge, styles.priceBadge]}>
-                <AppText variant="caption" style={styles.priceText}>
-                  ₹{event.price}
-                </AppText>
-              </View>
-            ) : (
-              <View style={[styles.badge, styles.freeBadge]}>
-                <AppText variant="caption" style={styles.freeText}>
-                  FREE
-                </AppText>
-              </View>
-            )}
-          </View>
-        </View>
+      <View style={styles.infoCont}>
+        <AppText variant="subtitle" style={styles.title} numberOfLines={1}>
+          {event.title}
+        </AppText>
+        <AppText variant="caption" color={Colors.light.secondaryText}>
+          {dayShort}, {day} {month}, {time}
+        </AppText>
+        <AppText variant="caption" color={Colors.light.secondaryText}>
+          {event.location}
+        </AppText>
       </View>
-      <AppText variant="subtitle" style={styles.title} numberOfLines={1}>
-        {event.title}
-      </AppText>
-      <AppText variant="caption" color={Colors.light.secondaryText}>
-        {dayShort}, {day} {month}, {time}
-      </AppText>
-      <AppText variant="caption" color={Colors.light.secondaryText}>
-        {event.location}
-      </AppText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  mainCont: {
+    backgroundColor: Colors.light.surface,
+    borderRadius: Radius.md,
+    marginBottom: Spacing.xl,
+    ...Shadows.card,
+  },
   card: {
     backgroundColor: Colors.light.surface,
     borderRadius: Radius.lg,
-    marginBottom: Spacing.md,
     flexDirection: 'row',
     overflow: 'hidden',
     ...Shadows.card,
@@ -149,7 +119,10 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: 180,
-    borderRadius: 14,
-    marginBottom: 10,
+    borderTopLeftRadius: Radius.md,
+    borderTopRightRadius: Radius.md,
+  },
+  infoCont: {
+    padding: Spacing.sm,
   },
 });
