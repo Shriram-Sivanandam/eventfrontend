@@ -1,14 +1,21 @@
 import React from 'react';
-import { Text, TextProps, StyleSheet } from 'react-native';
+import { Text, TextProps, StyleSheet, TextStyle } from 'react-native';
 import Colors from '../constants/colors';
 import { Typography } from '../constants/typography';
 
 type Props = TextProps & {
   variant?: keyof typeof Typography;
   color?: string;
+  fontWeight?: TextStyle['fontWeight'];
 };
 
-const AppText = ({ variant = 'body', color, style, ...props }: Props) => {
+const AppText = ({
+  variant = 'body',
+  color,
+  style,
+  fontWeight,
+  ...props
+}: Props) => {
   return (
     <Text
       {...props}
@@ -16,6 +23,7 @@ const AppText = ({ variant = 'body', color, style, ...props }: Props) => {
         styles.text,
         Typography[variant],
         { color: color ?? Colors.light.primaryText },
+        { fontWeight: fontWeight ?? 'normal' },
         style,
       ]}
     />

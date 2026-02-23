@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { StyleSheet, ActivityIndicator, View, Image } from 'react-native';
+import {
+  StyleSheet,
+  ActivityIndicator,
+  View,
+  Image,
+  Pressable,
+} from 'react-native';
 import Screen from '../../components/Screen';
 import AppText from '../../components/AppText';
 import AppButton from '../../components/AppButton';
 import api from '../../api/client';
 import Colors from '../../constants/colors';
 import { useRoute } from '@react-navigation/native';
-import { Radius, Spacing } from '../../constants/layout';
+import { Radius, Shadows, Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 export default function EventDetailsScreen() {
@@ -56,17 +62,28 @@ export default function EventDetailsScreen() {
           {dayShort}, {day} {month}, {time}
         </AppText>
 
-        <AppText style={styles.section}>
+        <Pressable style={styles.locationCont}>
+          <View style={styles.locationLeftCont}>
+            <Ionicons
+              name="location-outline"
+              size={23}
+              color={Colors.light.primaryText}
+            />
+            <AppText variant="body" style={styles.locationText}>
+              {event.location || 'TBA'}
+            </AppText>
+          </View>
           <Ionicons
-            name="location-outline"
-            size={20}
+            name="chevron-forward"
+            size={25}
             color={Colors.light.primaryText}
           />
-          {event.location || 'TBA'}
-        </AppText>
+        </Pressable>
 
         <View style={styles.section}>
-          <AppText variant="subtitle">About this event</AppText>
+          <AppText variant="subtitle" fontWeight="bold">
+            About this event
+          </AppText>
           {event.description && (
             <AppText variant="caption">{event.description}</AppText>
           )}
@@ -111,6 +128,25 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: Spacing.xl,
+  },
+  locationCont: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.md,
+    marginTop: Spacing.md,
+    backgroundColor: Colors.light.surface,
+    borderRadius: Radius.md,
+    ...Shadows.card,
+  },
+  locationLeftCont: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  locationText: {
+    marginLeft: Spacing.md,
   },
   bottomCont: {
     flexDirection: 'row',

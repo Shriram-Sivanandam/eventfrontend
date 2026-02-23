@@ -75,6 +75,7 @@ export default function EventsScreen() {
       <FlatList
         data={events}
         keyExtractor={item => item.id}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => <EventCard event={item} />}
         refreshControl={
           <RefreshControl
