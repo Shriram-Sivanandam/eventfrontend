@@ -27,6 +27,7 @@ export default function EventsScreen() {
     try {
       const res = await api.get('/events');
       setEvents(res.data.events);
+      console.log('hey there how you doing ', res.data.events);
     } catch (err) {
       console.log('EVENT FETCH ERROR', err);
     } finally {

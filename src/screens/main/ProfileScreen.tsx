@@ -73,7 +73,7 @@ export default function ProfileScreen() {
         />
       </View>
 
-      <Pressable style={styles.pressableCont} onPress={logout}>
+      <Pressable style={styles.pressableCont}>
         <View style={styles.pressableLeftCont}>
           <Ionicons
             name="albums-outline"
@@ -127,7 +127,7 @@ export default function ProfileScreen() {
         />
       </Pressable>
 
-      <Pressable style={styles.pressableCont}>
+      <Pressable style={styles.pressableCont} onPress={logout}>
         <View style={styles.pressableLeftCont}>
           <Ionicons
             name="exit-outline"

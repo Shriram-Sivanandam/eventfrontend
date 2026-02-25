@@ -2,6 +2,7 @@ const Colors = {
   light: {
     background: '#F5F6FA',
     surface: '#FFFFFF',
+    secondarySurface: '#FAF7F2',
 
     primaryText: '#1A1A1A',
     secondaryText: '#6B6B6B',
