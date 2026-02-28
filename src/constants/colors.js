@@ -8,7 +8,8 @@ const Colors = {
     secondaryText: '#6B6B6B',
     linkText: '#5865F2',
 
-    primary: '#5865F2',
+    primary: '#FF6B35',
+    secondary: '#5865F2',
     danger: '#E74C3C',
     success: '#27AE60',
 

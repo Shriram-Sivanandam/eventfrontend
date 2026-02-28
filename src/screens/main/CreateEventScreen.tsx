@@ -1,42 +1,56 @@
-import React, { useState } from 'react';
-import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import {
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import Screen from '../../components/Screen';
 import AppText from '../../components/AppText';
-import AppInput from '../../components/AppInput';
 import AppButton from '../../components/AppButton';
 import api from '../../api/client';
 import { useNavigation } from '@react-navigation/native';
 import { Spacing } from '../../constants/layout';
 import Colors from '../../constants/colors';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { FormState, ErrorState } from '../../constants/types';
+import Page1 from '../createEvent/Page1';
+import Page2 from '../createEvent/Page2';
+import Page3 from '../createEvent/Page3';
+import FormStepBar from '../../components/FormStepBar';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+const TOTAL_STEPS = 3;
 
 export default function CreateEventScreen() {
   const navigation = useNavigation<any>();
-  const [showPicker, setShowPicker] = useState(false);
   const [image, setImage] = useState<any>(null);
+  const [step, setStep] = useState(0);
+  const slideAnimation = useRef(new Animated.Value(0)).current;
 
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     title: '',
     description: '',
     location: '',
+    address_line_one: '',
+    city: '',
+    pincode: '',
+    maps_link: '',
     date: new Date(),
+    duration_minutes: '',
     price: '',
     capacity: '',
+    things_to_bring: '',
+    things_provided: '',
   });
 
-  const [errors, setErrors] = useState({
-    title: '',
-    description: '',
-    location: '',
-    date: '',
-    price: '',
-    capacity: '',
-  });
+  const [errors, setErrors] = useState<ErrorState>({});
 
   const pickImage = async () => {
-    console.log('helloouuuu ');
     const result = await launchImageLibrary({
       mediaType: 'photo',
       quality: 0.8,
@@ -44,64 +58,48 @@ export default function CreateEventScreen() {
 
     if (result.assets?.length) {
       setImage(result.assets[0]);
-      console.log('yuooooooo ', result.assets[0]);
     }
   };
 
-  const validate = () => {
-    console.log('asdfasfasd ');
-    const newErrors: any = {};
-
-    if (!form.title) newErrors.title = 'Enter event title';
-    if (!form.location) newErrors.location = 'Enter a location';
-    if (!form.date) newErrors.date = 'Select a date';
-    if (!form.price) newErrors.price = 'Enter price for the event';
-    if (!form.capacity) newErrors.capacity = 'Enter event capacity';
-
-    setErrors(newErrors);
-
-    return Object.keys(newErrors).length === 0;
+  const validateStep = (s: number): boolean => {
+    const e: ErrorState = {};
+    if (s === 0) if (!form.title.trim()) e.title = 'Event title is required';
+    if (s === 1) {
+      if (!form.location.trim())
+        e.location = 'Enter a location name or landmark';
+      if (!form.city.trim()) e.city = 'City is required';
+      if (!form.pincode.trim()) e.pincode = 'Pincode is required';
+    }
+    if (s === 2) {
+      if (!form.price.trim()) e.price = 'Enter a price (0 for free)';
+      if (!form.capacity.trim()) e.capacity = 'Enter max capacity';
+    }
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
-  const createEvent = async () => {
-    if (!validate()) return;
-
-    const data = new FormData();
-
-    data.append('title', form.title);
-    data.append('description', form.description);
-    data.append('location', form.location);
-    data.append('event_start', form.date.toISOString());
-    data.append('price', form.price);
-    data.append('capacity', form.capacity);
-
-    if (image) {
-      data.append('image', {
-        uri: image.uri,
-        type: image.type,
-        name: image.fileName || 'photo.jpg',
-      });
-    }
-
-    try {
-      await api.post('/events', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
-
-      navigation.goBack();
-    } catch (err: any) {
-      console.log('SERVER ERROR:', err.response?.data);
-    }
+  const animateTransition = (direction: 'forward' | 'back') => {
+    slideAnimation.setValue(direction === 'forward' ? 40 : -40);
+    Animated.spring(slideAnimation, {
+      toValue: 0,
+      useNativeDriver: true,
+      speed: 18,
+      bounciness: 3,
+    }).start();
   };
 
-  const onDateChange = (event: any, selectedDate?: Date) => {
-    if (event.type === 'dismissed') {
-      return;
-    }
-    setShowPicker(false);
-    if (selectedDate) {
-      setForm(prev => ({ ...prev, date: selectedDate }));
-    }
+  const goNext = () => {
+    if (!validateStep(step)) return;
+    animateTransition('forward');
+    setErrors({});
+    setStep(s => s + 1);
+  };
+
+  const goToStep = (i: number) => {
+    if (i >= step) return;
+    animateTransition('back');
+    setErrors({});
+    setStep(i);
   };
 
   const openDatePicker = () => {
@@ -137,131 +135,131 @@ export default function CreateEventScreen() {
     });
   };
 
+  const handleFormChange = (key: keyof FormState) => (val: string) =>
+    setForm(prev => ({ ...prev, [key]: val }));
+
+  const createEvent = async () => {
+    if (!validateStep(step)) return;
+
+    const data = new FormData();
+
+    data.append('title', form.title);
+    data.append('description', form.description);
+    data.append('location', form.location);
+    data.append('address_line_one', form.address_line_one);
+    data.append('city', form.city);
+    data.append('pincode', form.pincode);
+    data.append('maps_link', form.maps_link);
+    data.append('event_start', form.date.toISOString());
+    data.append('duration_minutes', form.duration_minutes);
+    data.append('price', form.price);
+    data.append('capacity', form.capacity);
+    data.append('things_to_bring', form.things_to_bring);
+    data.append('things_provided', form.things_provided);
+
+    if (image) {
+      data.append('image', {
+        uri: image.uri,
+        type: image.type,
+        name: image.fileName || 'photo.jpg',
+      });
+    }
+
+    try {
+      await api.post('/events', data, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      navigation.goBack();
+    } catch (err: any) {
+      console.log('SERVER ERROR:', err);
+    }
+  };
+
   return (
-    <Screen>
-      <AppText variant="title">Create Event</AppText>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoidingView}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <Screen>
+        <View style={styles.headerCont}>
+          <TouchableOpacity
+            onPress={() => goToStep(step - 1)}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          >
+            <Ionicons
+              name="arrow-back-sharp"
+              size={24}
+              color={Colors.light.primaryText}
+              style={styles.icon}
+            />
+          </TouchableOpacity>
+          <AppText variant="title">Create Event</AppText>
+        </View>
+        <FormStepBar step={step} onStepPress={goToStep} />
 
-      <AppText variant="caption" style={styles.inputLabel}>
-        Title
-      </AppText>
-      <AppInput
-        placeholder="Ex: F1 Watch Party"
-        value={form.title}
-        onChangeText={text => setForm(prev => ({ ...prev, title: text }))}
-      />
-      <AppText variant="caption" color={Colors.light.danger}>
-        {errors.title}
-      </AppText>
-
-      <AppButton title="Add Image" onPress={pickImage} />
-
-      <AppText variant="caption" style={styles.inputLabel}>
-        Description
-      </AppText>
-      <AppInput
-        placeholder="Description"
-        value={form.description}
-        onChangeText={text => setForm(prev => ({ ...prev, description: text }))}
-      />
-      <AppText variant="caption" color={Colors.light.danger}>
-        {errors.description}
-      </AppText>
-
-      <AppText variant="caption" style={styles.inputLabel}>
-        Location
-      </AppText>
-      <AppInput
-        placeholder="Location"
-        value={form.location}
-        onChangeText={text => setForm(prev => ({ ...prev, location: text }))}
-      />
-      <AppText variant="caption" color={Colors.light.danger}>
-        {errors.location}
-      </AppText>
-
-      <AppText variant="caption" style={styles.inputLabel}>
-        Date
-      </AppText>
-
-      <View style={styles.dateTimeCont}>
-        <TouchableOpacity
-          onPress={openDatePicker}
-          style={styles.dateTimeInputs}
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
         >
-          <AppInput
-            placeholder="Select date"
-            value={form.date ? form.date.toLocaleDateString('en-GB') : ''}
-            editable={false}
+          <Animated.View
+            style={{ transform: [{ translateX: slideAnimation }] }}
+          >
+            {step === 0 && (
+              <Page1
+                form={form}
+                errors={errors}
+                image={image}
+                onFormChange={handleFormChange}
+                onPickImage={pickImage}
+              />
+            )}
+            {step === 1 && (
+              <Page2
+                form={form}
+                errors={errors}
+                onFormChange={handleFormChange}
+              />
+            )}
+            {step === 2 && (
+              <Page3
+                form={form}
+                errors={errors}
+                onFormChange={handleFormChange}
+                onOpenDatePicker={openDatePicker}
+                onOpenTimePicker={openTimePicker}
+              />
+            )}
+          </Animated.View>
+        </ScrollView>
+
+        <View style={styles.footer}>
+          <AppButton
+            title={step < TOTAL_STEPS - 1 ? 'Continue' : 'Create Event'}
+            onPress={step < TOTAL_STEPS - 1 ? goNext : createEvent}
+            style={styles.footerBtn}
           />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={openTimePicker}
-          style={styles.dateTimeInputs}
-        >
-          <AppInput
-            placeholder="Select time"
-            value={
-              form.date
-                ? form.date.toLocaleTimeString('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })
-                : ''
-            }
-            editable={false}
-          />
-        </TouchableOpacity>
-      </View>
-
-      {showPicker && (
-        <DateTimePicker
-          value={form.date || new Date()}
-          mode="datetime"
-          display="default"
-          onChange={onDateChange}
-          minimumDate={new Date()}
-        />
-      )}
-
-      <AppText variant="caption" color={Colors.light.danger}>
-        {errors.date}
-      </AppText>
-
-      <AppText variant="caption" style={styles.inputLabel}>
-        Price
-      </AppText>
-      <AppInput
-        placeholder="Ex: 500"
-        value={form.price}
-        onChangeText={text => setForm(prev => ({ ...prev, price: text }))}
-      />
-      <AppText variant="caption" color={Colors.light.danger}>
-        {errors.price}
-      </AppText>
-
-      <AppText variant="caption" style={styles.inputLabel}>
-        Capacity
-      </AppText>
-      <AppInput
-        placeholder="Ex: 10"
-        value={form.capacity}
-        onChangeText={text => setForm(prev => ({ ...prev, capacity: text }))}
-      />
-      <AppText variant="caption" color={Colors.light.danger}>
-        {errors.capacity}
-      </AppText>
-
-      <AppButton
-        title="Create Event"
-        onPress={createEvent}
-        style={styles.createBtn}
-      />
-    </Screen>
+          <AppText variant="caption" style={styles.stepHint}>
+            Step {step + 1} of {TOTAL_STEPS}
+          </AppText>
+        </View>
+      </Screen>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  headerCont: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: Spacing.sm,
+  },
+  icon: {
+    marginRight: Spacing.sm,
+  },
   inputLabel: {
     marginTop: Spacing.sm,
     marginBottom: Spacing.xs,
@@ -278,5 +276,17 @@ const styles = StyleSheet.create({
   },
   dateTimeInputs: {
     flex: 1,
+  },
+  footer: {
+    paddingTop: Spacing.sm,
+    borderTopWidth: 1,
+    borderTopColor: Colors.light.border,
+  },
+  footerBtn: {
+    marginBottom: Spacing.sm,
+  },
+  stepHint: {
+    textAlign: 'center',
+    color: Colors.light.secondaryText,
   },
 });
