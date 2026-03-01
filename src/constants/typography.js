@@ -1,7 +1,7 @@
 export const Typography = {
   title: {
     fontFamily: 'Inter-Bold',
-    fontSize: 22,
+    fontSize: 20,
   },
   subtitle: {
     fontFamily: 'Inter-SemiBold',

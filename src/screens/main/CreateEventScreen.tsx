@@ -83,7 +83,7 @@ export default function CreateEventScreen() {
     Animated.spring(slideAnimation, {
       toValue: 0,
       useNativeDriver: true,
-      speed: 18,
+      speed: 3,
       bounciness: 3,
     }).start();
   };
@@ -97,6 +97,11 @@ export default function CreateEventScreen() {
 
   const goToStep = (i: number) => {
     if (i >= step) return;
+    if (i < 0) {
+      return setTimeout(() => {
+        navigation.goBack();
+      }, 200);
+    }
     animateTransition('back');
     setErrors({});
     setStep(i);
@@ -189,7 +194,7 @@ export default function CreateEventScreen() {
           >
             <Ionicons
               name="arrow-back-sharp"
-              size={24}
+              size={22}
               color={Colors.light.primaryText}
               style={styles.icon}
             />

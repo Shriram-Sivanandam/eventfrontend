@@ -25,9 +25,8 @@ export default function EventsScreen() {
 
   const fetchEvents = async () => {
     try {
-      const res = await api.get('/events');
+      const res = await api.get('/events?from=' + new Date().toISOString());
       setEvents(res.data.events);
-      console.log('hey there how you doing ', res.data.events);
     } catch (err) {
       console.log('EVENT FETCH ERROR', err);
     } finally {
