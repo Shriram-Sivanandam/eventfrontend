@@ -6,6 +6,7 @@ const Colors = {
 
     primaryText: '#1A1A1A',
     secondaryText: '#6B6B6B',
+    tertiaryText: '#FFFFFF',
     linkText: '#5865F2',
 
     primary: '#FF6B35',
