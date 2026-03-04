@@ -12,7 +12,8 @@ export default Screen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.light.background,
+    //backgroundColor: Colors.light.background,
+    backgroundColor: Colors.light.surface,
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.xl,
   },

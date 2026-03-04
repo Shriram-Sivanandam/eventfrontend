@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity, StyleSheet } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Radius, Spacing } from '../constants/layout';
+import { Radius, Shadows, Spacing } from '../constants/layout';
 import Colors from '../constants/colors';
 
 export default function InfoRow({
@@ -9,15 +9,23 @@ export default function InfoRow({
   children,
   onPress,
   accent,
+  rowStyle,
+  shadow,
 }: {
   icon: string;
   children: React.ReactNode;
   onPress?: () => void;
   accent?: string;
+  rowStyle?: object;
+  shadow?: boolean;
 }) {
   const Wrap = onPress ? TouchableOpacity : View;
   return (
-    <Wrap onPress={onPress} activeOpacity={0.7} style={styles.infoRow}>
+    <Wrap
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={[styles.infoRow, rowStyle, shadow && styles.shadow]}
+    >
       <View
         style={[
           styles.iconBadge,
@@ -42,15 +50,15 @@ const styles = StyleSheet.create({
   infoRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.light.surface,
+    backgroundColor: Colors.light.tertiarySurface,
     borderRadius: Radius.md,
     padding: Spacing.md,
     marginBottom: Spacing.xs,
     gap: Spacing.sm,
   },
   iconBadge: {
-    width: 40,
-    height: 40,
+    width: 36,
+    height: 36,
     borderRadius: Radius.md,
     alignItems: 'center',
     justifyContent: 'center',
@@ -58,5 +66,8 @@ const styles = StyleSheet.create({
   infoRowContent: {
     flex: 1,
     justifyContent: 'center',
+  },
+  shadow: {
+    ...Shadows.card,
   },
 });

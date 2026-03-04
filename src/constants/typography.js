@@ -1,4 +1,8 @@
 export const Typography = {
+  pageHeader: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 28,
+  },
   title: {
     fontFamily: 'Inter-Bold',
     fontSize: 20,

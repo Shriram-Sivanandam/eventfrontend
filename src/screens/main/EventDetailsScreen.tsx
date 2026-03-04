@@ -155,6 +155,7 @@ export default function EventDetailsScreen() {
               icon="location"
               onPress={event.maps_link ? openMaps : undefined}
               accent="#FF6B35"
+              shadow
             >
               <AppText
                 variant="body"
@@ -189,7 +190,11 @@ export default function EventDetailsScreen() {
             <AppText style={styles.sectionTitle}>EVENT INFO</AppText>
             <View style={styles.infoGrid}>
               {event.capacity && (
-                <InfoRow icon="people-outline" accent={Colors.light.success}>
+                <InfoRow
+                  icon="people-outline"
+                  accent={Colors.light.success}
+                  shadow
+                >
                   <AppText
                     variant="body"
                     fontWeight="bold"
@@ -203,7 +208,11 @@ export default function EventDetailsScreen() {
                 </InfoRow>
               )}
               {duration && (
-                <InfoRow icon="time-outline" accent={Colors.light.secondary}>
+                <InfoRow
+                  icon="time-outline"
+                  accent={Colors.light.secondary}
+                  shadow
+                >
                   <AppText
                     variant="body"
                     fontWeight="bold"
@@ -315,7 +324,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   titleCard: {
-    backgroundColor: '#FFFDF8',
+    backgroundColor: Colors.light.tertiarySurface,
     paddingHorizontal: Spacing.md,
     paddingVertical: Spacing.md,
     borderBottomWidth: 1,
