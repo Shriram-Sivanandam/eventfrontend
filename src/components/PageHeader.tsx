@@ -9,32 +9,37 @@ import Colors from '../constants/colors';
 export default function PageHeader({
   title,
   subtitle,
+  rightComponent,
 }: {
   title: string;
   subtitle?: string;
+  rightComponent?: React.ReactNode;
 }) {
   const navigation = useNavigation<any>();
   return (
     <View style={styles.header}>
-      <TouchableOpacity
-        style={styles.backBtn}
-        onPress={() => navigation.goBack()}
-        activeOpacity={0.7}
-      >
-        <Ionicons
-          name="arrow-back"
-          size={20}
-          color={Colors.light.primaryText}
-        />
-      </TouchableOpacity>
-      <View>
-        <AppText variant="title">{title}</AppText>
-        {subtitle && (
-          <AppText variant="caption" color={Colors.light.secondaryText}>
-            {subtitle}
-          </AppText>
-        )}
+      <View style={styles.headerLeftView}>
+        <TouchableOpacity
+          style={styles.backBtn}
+          onPress={() => navigation.goBack()}
+          activeOpacity={0.7}
+        >
+          <Ionicons
+            name="arrow-back"
+            size={20}
+            color={Colors.light.primaryText}
+          />
+        </TouchableOpacity>
+        <View>
+          <AppText variant="title">{title}</AppText>
+          {subtitle && (
+            <AppText variant="caption" color={Colors.light.secondaryText}>
+              {subtitle}
+            </AppText>
+          )}
+        </View>
       </View>
+      {rightComponent}
     </View>
   );
 }
@@ -42,9 +47,15 @@ export default function PageHeader({
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingTop: Spacing.md,
     paddingBottom: Spacing.lg,
+    gap: Spacing.md,
+  },
+  headerLeftView: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: Spacing.md,
   },
   backBtn: {

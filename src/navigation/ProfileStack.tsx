@@ -1,13 +1,15 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import ProfileScreen from '../screens/main/ProfileScreen';
 import HelpAndSupport from '../screens/profile/HelpAndSupport';
+import MyEvents from '../screens/profile/MyEvents';
 
 const Stack = createNativeStackNavigator();
 
 export default function EventsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
+      <Stack.Screen name="MyEvents" component={MyEvents} />
       <Stack.Screen name="HelpAndSupport" component={HelpAndSupport} />
     </Stack.Navigator>
   );

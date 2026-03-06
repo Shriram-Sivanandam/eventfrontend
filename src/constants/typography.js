@@ -19,4 +19,8 @@ export const Typography = {
     fontFamily: 'Inter-Regular',
     fontSize: 12,
   },
+  small: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 10,
+  },
 };
