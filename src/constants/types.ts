@@ -15,3 +15,16 @@ export type FormState = {
 };
 
 export type ErrorState = Partial<Record<keyof FormState, string>>;
+
+export type Event = {
+  id: string;
+  title: string;
+  location?: string;
+  city?: string;
+  event_start: string;
+  event_end?: string;
+  price: number;
+  capacity?: number;
+  image_url?: string;
+  registrant_count?: number;
+};
