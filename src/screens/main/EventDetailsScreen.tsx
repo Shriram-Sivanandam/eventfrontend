@@ -61,7 +61,7 @@ export default function EventDetailsScreen() {
     : [];
 
   const [loading, setLoading] = useState(false);
-  const [joined, setJoined] = useState(false);
+  const [joined, setJoined] = useState(event.joined);
 
   const IMAGE_BASE = 'http://10.0.2.2:8080';
 

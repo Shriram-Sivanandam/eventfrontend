@@ -27,4 +27,5 @@ export type Event = {
   capacity?: number;
   image_url?: string;
   registrant_count?: number;
+  duration_minutes?: number;
 };
