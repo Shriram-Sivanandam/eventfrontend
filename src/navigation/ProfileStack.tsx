@@ -3,6 +3,7 @@ import ProfileScreen from '../screens/main/ProfileScreen';
 import HelpAndSupport from '../screens/profile/HelpAndSupport';
 import MyEvents from '../screens/profile/MyEvents';
 import RegisteredEvents from '../screens/profile/RegisteredEvents';
+import EventDashboard from '../screens/profile/EventDashboard';
 
 const Stack = createNativeStackNavigator();
 
@@ -11,6 +12,7 @@ export default function EventsStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
       <Stack.Screen name="MyEvents" component={MyEvents} />
+      <Stack.Screen name="EventDashboard" component={EventDashboard} />
       <Stack.Screen name="RegisteredEvents" component={RegisteredEvents} />
       <Stack.Screen name="HelpAndSupport" component={HelpAndSupport} />
     </Stack.Navigator>

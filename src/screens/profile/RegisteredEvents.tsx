@@ -91,6 +91,7 @@ const empty = StyleSheet.create({
     paddingHorizontal: Spacing.lg,
     paddingVertical: Spacing.md,
     borderRadius: Radius.md,
+    marginVertical: Spacing.md,
   },
   btnText: {
     color: Colors.light.tertiaryText,

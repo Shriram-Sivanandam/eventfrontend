@@ -226,7 +226,9 @@ export default function MyEventsScreen() {
           <HostEventCard
             event={item}
             isPast={!isUpcoming(item.event_start)}
-            onPress={() => navigation.navigate('EventDetails', { event: item })}
+            onPress={() => {
+              navigation.navigate('EventDashboard', { id: item.id });
+            }}
             onEdit={() => navigation.navigate('EditEvent', { event: item })}
             onDelete={() => handleDelete(item)}
           />
