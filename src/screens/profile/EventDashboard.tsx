@@ -121,7 +121,7 @@ export default function EventDashboard() {
   const updateStatus = async (reg: Registrant, status: RegistrantStatus) => {
     setUpdatingId(reg.registration_id);
     try {
-      await api.patch(`/events/${id}/registrations/${reg.registration_id}`, {
+      await api.patch(`/events/${id}/registrations/${reg.user_id}`, {
         status,
       });
       setDashboard(prev => {
@@ -141,7 +141,8 @@ export default function EventDashboard() {
           total_registered: accepted + pending,
         };
       });
-    } catch {
+    } catch (err) {
+      console.log(err);
       Alert.alert('Error', 'Failed to update registration.');
     } finally {
       setUpdatingId(null);
