@@ -66,7 +66,11 @@ export default function ProfileScreen() {
           <AppText variant="pageHeader" style={styles.headerTitle}>
             Profile
           </AppText>
-          <TouchableOpacity style={styles.editBtn} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.editBtn}
+            activeOpacity={0.7}
+            onPress={() => navigation.navigate('EditProfile')}
+          >
             <Ionicons name="pencil" size={16} color="#FF6B35" />
           </TouchableOpacity>
         </View>
