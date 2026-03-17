@@ -52,8 +52,6 @@ export default function EditProfileScreen() {
     bio: '',
     city: '',
     age: '',
-    instagram: '',
-    twitter: '',
   });
 
   const set = (key: keyof typeof form) => (val: string) =>
@@ -71,8 +69,6 @@ export default function EditProfileScreen() {
           bio: u.bio || '',
           city: u.city || '',
           age: u.age != null ? String(u.age) : '',
-          instagram: u.instagram || '',
-          twitter: u.twitter || '',
         });
         setGender(u.gender || '');
         if (u.avatar_url) setAvatarURL(`${IMAGE_BASE}${u.avatar_url}`);
@@ -116,10 +112,7 @@ export default function EditProfileScreen() {
     if (form.age) {
       const n = parseInt(form.age, 10);
       if (isNaN(n) || n < 13 || n > 120) {
-        Alert.alert(
-          'Invalid age',
-          'Please enter a valid age between 13 and 120.',
-        );
+        Alert.alert('Invalid age', 'You must be atleast 13');
         return;
       }
     }
@@ -144,8 +137,6 @@ export default function EditProfileScreen() {
       data.append('phone', form.phone);
       data.append('bio', form.bio);
       data.append('city', form.city);
-      data.append('instagram', form.instagram);
-      data.append('twitter', form.twitter);
       if (gender) data.append('gender', gender);
       if (form.age) data.append('age', form.age);
 
@@ -162,7 +153,7 @@ export default function EditProfileScreen() {
       });
       navigation.goBack();
     } catch (err: any) {
-      console.log('SAVE PROFILE ERROR', err.response?.data);
+      console.log('SAVE PROFILE ERROR', err);
       Alert.alert('Error', 'Failed to save profile. Please try again.');
     } finally {
       setSaving(false);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   ActivityIndicator,
@@ -18,6 +18,7 @@ import { useRoute } from '@react-navigation/native';
 import { Radius, Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import HostedByCard from '../../components/HostedbyCard';
 
 function formatDuration(minutes: number) {
   if (!minutes) return null;
@@ -31,7 +32,7 @@ function formatDuration(minutes: number) {
 export default function EventDetailsScreen() {
   const route = useRoute<any>();
   const navigation = useNavigation<any>();
-  const { event } = route.params;
+  const [event, setEvent] = useState(route.params.event);
 
   const startDate = new Date(event.event_start);
   const day = startDate.getDate();
@@ -64,6 +65,13 @@ export default function EventDetailsScreen() {
   const [joined, setJoined] = useState(event.joined);
 
   const IMAGE_BASE = 'http://10.0.2.2:8080';
+
+  useEffect(() => {
+    api
+      .get(`/events/${route.params.event.id}`)
+      .then(res => setEvent(res.data))
+      .catch(err => console.log('EVENT DETAIL ERROR', err));
+  }, [route.params.event.id]);
 
   const openMaps = () => {
     if (event.maps_link) {
@@ -249,6 +257,15 @@ export default function EventDetailsScreen() {
               </View>
             </View>
           )}
+
+          <HostedByCard
+            hostUserId={event.host_user_id}
+            hostName={event.host_name}
+            hostAvatarUrl={event.host_avatar}
+            hostingRating={event.host_rating}
+            totalHosted={event.host_total_hosted}
+          />
+
           <View style={styles.bottomSpace} />
         </ScrollView>
 
