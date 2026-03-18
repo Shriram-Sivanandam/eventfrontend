@@ -56,3 +56,34 @@ export type Dashboard = {
   rejected: number;
   registrants: Registrant[];
 };
+
+export type PastEvent = {
+  id: string;
+  title: string;
+  location?: string;
+  city?: string;
+  event_start: string;
+  image_url?: string;
+  price: number;
+  avg_rating?: number;
+  rating_count: number;
+};
+
+export type HostProfile = {
+  user_id: string;
+  name?: string;
+  email: string;
+  avatar_url?: string;
+  bio?: string;
+  city?: string;
+  instagram?: string;
+  twitter?: string;
+  gender?: string;
+  age?: number;
+  hosting_rating?: number;
+  attendee_rating?: number;
+  total_hosted: number;
+  total_attended: number;
+  total_ratings: number;
+  past_events: PastEvent[];
+};

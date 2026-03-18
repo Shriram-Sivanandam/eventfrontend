@@ -56,7 +56,7 @@ function CountdownLabel({ iso }: { iso: string }) {
     urgent = true;
   } else if (diffDays === 1) {
     label = 'Tomorrow';
-  } else if (diffDays <= 7) {
+  } else if (diffDays <= 7 && diffDays > 1) {
     label = `In ${diffDays} days`;
   } else {
     return null;
@@ -102,13 +102,15 @@ const cd = StyleSheet.create({
 export default function RegisteredEventCard({
   event,
   isPast,
+  isBottomRow = true,
   onPress,
   onLeave,
 }: {
   event: Event;
   isPast: boolean;
+  isBottomRow?: boolean;
   onPress: () => void;
-  onLeave: () => void;
+  onLeave?: () => void;
 }) {
   const { time, fullDate } = formatDate(event.event_start);
   const accent = getAccent(event.title);
@@ -190,35 +192,40 @@ export default function RegisteredEventCard({
             )}
           </View>
 
-          <View style={card.bottomRow}>
-            <View
-              style={[
-                card.pricePill,
-                { backgroundColor: isPast ? '#F0EBE3' : accent + '18' },
-              ]}
-            >
-              <AppText
-                style={[card.priceText, { color: isPast ? '#8A7B6B' : accent }]}
+          {isBottomRow && (
+            <View style={card.bottomRow}>
+              <View
+                style={[
+                  card.pricePill,
+                  { backgroundColor: isPast ? '#F0EBE3' : accent + '18' },
+                ]}
               >
-                {event.price > 0 ? `₹${event.price}` : 'Free'}
-              </AppText>
-            </View>
+                <AppText
+                  style={[
+                    card.priceText,
+                    { color: isPast ? '#8A7B6B' : accent },
+                  ]}
+                >
+                  {event.price > 0 ? `₹${event.price}` : 'Free'}
+                </AppText>
+              </View>
 
-            {!isPast && (
-              <TouchableOpacity
-                style={card.leaveBtn}
-                onPress={onLeave}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name="close-circle-outline"
-                  size={13}
-                  color={Colors.light.danger}
-                />
-                <AppText style={card.leaveBtnText}>Cancel</AppText>
-              </TouchableOpacity>
-            )}
-          </View>
+              {!isPast && (
+                <TouchableOpacity
+                  style={card.leaveBtn}
+                  onPress={onLeave}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={13}
+                    color={Colors.light.danger}
+                  />
+                  <AppText style={card.leaveBtnText}>Cancel</AppText>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
         </View>
       </View>
     </TouchableOpacity>
