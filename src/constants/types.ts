@@ -87,3 +87,8 @@ export type HostProfile = {
   total_ratings: number;
   past_events: PastEvent[];
 };
+
+export type Tag = {
+  id: string;
+  name: string;
+};
