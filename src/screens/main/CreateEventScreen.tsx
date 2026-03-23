@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import {
   StyleSheet,
-  TouchableOpacity,
   View,
   Animated,
   KeyboardAvoidingView,
@@ -22,7 +21,7 @@ import Page1 from '../createEvent/Page1';
 import Page2 from '../createEvent/Page2';
 import Page3 from '../createEvent/Page3';
 import FormStepBar from '../../components/FormStepBar';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import PageHeader from '../../components/PageHeader';
 
 const TOTAL_STEPS = 3;
 
@@ -187,20 +186,8 @@ export default function CreateEventScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Screen>
-        <View style={styles.headerCont}>
-          <TouchableOpacity
-            onPress={() => goToStep(step - 1)}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-          >
-            <Ionicons
-              name="arrow-back-sharp"
-              size={22}
-              color={Colors.light.primaryText}
-              style={styles.icon}
-            />
-          </TouchableOpacity>
-          <AppText variant="title">Create Event</AppText>
-        </View>
+        <PageHeader title="Create Event" />
+
         <FormStepBar step={step} onStepPress={goToStep} />
 
         <ScrollView
@@ -256,14 +243,6 @@ export default function CreateEventScreen() {
 const styles = StyleSheet.create({
   keyboardAvoidingView: {
     flex: 1,
-  },
-  headerCont: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: Spacing.sm,
-  },
-  icon: {
-    marginRight: Spacing.sm,
   },
   inputLabel: {
     marginTop: Spacing.sm,

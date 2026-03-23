@@ -9,31 +9,40 @@ import Colors from '../constants/colors';
 export default function PageHeader({
   title,
   subtitle,
+  backArrow = true,
   rightComponent,
 }: {
   title: string;
   subtitle?: string;
+  backArrow?: boolean;
   rightComponent?: React.ReactNode;
 }) {
   const navigation = useNavigation<any>();
   return (
     <View style={styles.header}>
       <View style={styles.headerLeftView}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.goBack()}
-          activeOpacity={0.7}
-        >
-          <Ionicons
-            name="arrow-back"
-            size={20}
-            color={Colors.light.primaryText}
-          />
-        </TouchableOpacity>
+        {backArrow && (
+          <TouchableOpacity
+            style={styles.backBtn}
+            onPress={() => navigation.goBack()}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={20}
+              color={Colors.light.primaryText}
+            />
+          </TouchableOpacity>
+        )}
+
         <View>
           <AppText variant="title">{title}</AppText>
           {subtitle && (
-            <AppText variant="caption" color={Colors.light.secondaryText}>
+            <AppText
+              variant="caption"
+              style={styles.subtitle}
+              color={Colors.light.secondaryText}
+            >
               {subtitle}
             </AppText>
           )}
@@ -66,5 +75,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 2,
+  },
+  subtitle: {
+    marginTop: Spacing.xs - 1,
   },
 });

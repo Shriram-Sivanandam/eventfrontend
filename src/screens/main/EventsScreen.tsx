@@ -21,6 +21,7 @@ import Screen from '../../components/Screen';
 import Colors from '../../constants/colors';
 import { Tag } from '../../constants/types';
 import CitySheet from '../../components/CitySheet';
+import PageHeader from '../../components/PageHeader';
 
 const TAG_COLORS = ['#FF6B35', '#E63946', '#2EC4B6', '#8338EC', '#FFBE0B'];
 function tagColor(id: string) {
@@ -67,7 +68,6 @@ const tp = StyleSheet.create({
   labelSelected: { color: '#fff' },
 });
 
-// ── City trigger pill ──────────────────────────────────────────────────────────
 function CityTrigger({
   selectedCity,
   onPress,
@@ -207,7 +207,6 @@ const es = StyleSheet.create({
   },
 });
 
-// ── Main Screen ────────────────────────────────────────────────────────────────
 export default function EventsScreen() {
   const navigation = useNavigation<any>();
 
@@ -384,12 +383,19 @@ export default function EventsScreen() {
     <Screen>
       <StatusBar barStyle="dark-content" backgroundColor="#F5F0E8" />
 
-      <View style={styles.pageHeader}>
-        <AppText style={styles.pageTitle}>Discover</AppText>
-        <AppText style={styles.pageSubtitle}>
-          Find events happening near you
-        </AppText>
-      </View>
+      <PageHeader
+        title="Spotlight"
+        subtitle="Find events happening near you"
+        backArrow={false}
+        rightComponent={
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ProfileScreen')}
+            activeOpacity={0.85}
+          >
+            <Ionicons name="person-circle-outline" size={38} color="#FF6B35" />
+          </TouchableOpacity>
+        }
+      />
 
       <FlatList
         data={filteredEvents}
@@ -461,19 +467,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  pageHeader: {
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.md,
-  },
-  pageTitle: {
-    fontSize: 30,
-    fontWeight: '900',
-    color: Colors.light.primaryText,
-  },
-  pageSubtitle: {
-    fontSize: 13,
-    color: Colors.light.secondaryText,
-  },
   filterRow: {
     alignItems: 'center',
   },
@@ -508,7 +501,7 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: Spacing.xl,
-    bottom: Spacing.xl,
+    bottom: Spacing.xxl,
     backgroundColor: Colors.light.primary,
     width: 60,
     height: 60,

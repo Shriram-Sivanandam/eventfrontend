@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AuthStack from './AuthStack';
-import MainTabs from './MainTabs';
+import EventsStack from './EventsStack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,7 +14,7 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer>
-      {token ? <MainTabs /> : <AuthStack />}
+      {token ? <EventsStack /> : <AuthStack />}
     </NavigationContainer>
   );
 }

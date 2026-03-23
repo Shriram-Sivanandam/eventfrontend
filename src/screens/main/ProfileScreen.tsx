@@ -16,6 +16,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Radius, Shadows, Spacing } from '../../constants/layout';
 import { useNavigation } from '@react-navigation/native';
 import InfoRow from '../../components/InfoRow';
+import PageHeader from '../../components/PageHeader';
 
 function getInitials(name: string, email: string): string {
   const source = name || email || '?';
@@ -62,18 +63,18 @@ export default function ProfileScreen() {
       <StatusBar barStyle="dark-content" backgroundColor="#FFFDF8" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <AppText variant="pageHeader" style={styles.headerTitle}>
-            Profile
-          </AppText>
-          <TouchableOpacity
-            style={styles.editBtn}
-            activeOpacity={0.7}
-            onPress={() => navigation.navigate('EditProfile')}
-          >
-            <Ionicons name="pencil" size={16} color="#FF6B35" />
-          </TouchableOpacity>
-        </View>
+        <PageHeader
+          title="Profile"
+          rightComponent={
+            <TouchableOpacity
+              style={styles.editBtn}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('EditProfile')}
+            >
+              <Ionicons name="pencil" size={16} color="#FF6B35" />
+            </TouchableOpacity>
+          }
+        />
 
         <View style={styles.profileCard}>
           <View style={styles.nameCardCont}>
@@ -201,9 +202,9 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   editBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 38,
+    height: 38,
+    borderRadius: Radius.pill,
     backgroundColor: '#FF6B3518',
     alignItems: 'center',
     justifyContent: 'center',
