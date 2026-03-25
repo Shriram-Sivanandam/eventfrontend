@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.md,
     paddingBottom: Spacing.lg,
     gap: Spacing.md,
+    marginTop: Spacing.sm,
   },
   headerLeftView: {
     flexDirection: 'row',
