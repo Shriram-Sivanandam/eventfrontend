@@ -57,6 +57,22 @@
 		<string>Inter-Bold.ttf</string>
 		<string>InterDisplay-SemiBold.ttf</string>
 		<string>Inter-Regular.ttf</string>
+		<string>Ionicons.ttf</string>
 	</array>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+	<key>NSAllowsArbitraryLoads</key>
+	<true/>
+	<key>NSAllowsLocalNetworking</key>
+	<true/>
+	<key>NSExceptionDomains</key>
+	<dict>
+		<key>127.0.0.1</key>
+		<dict>
+		<key>NSExceptionAllowsInsecureHTTPLoads</key>
+		<true/>
+		</dict>
+	</dict>
+	</dict>
 </dict>
 </plist>
