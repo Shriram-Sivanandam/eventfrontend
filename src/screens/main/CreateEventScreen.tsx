@@ -29,6 +29,7 @@ export default function CreateEventScreen() {
   const navigation = useNavigation<any>();
   const [image, setImage] = useState<any>(null);
   const [step, setStep] = useState(0);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const slideAnimation = useRef(new Animated.Value(0)).current;
 
   const [form, setForm] = useState<FormState>({
@@ -238,6 +239,8 @@ export default function CreateEventScreen() {
                 onFormChange={handleFormChange}
                 onOpenDatePicker={openDatePicker}
                 onOpenTimePicker={openTimePicker}
+                selectedTagIds={selectedTagIds}
+                onTagsChange={setSelectedTagIds}
               />
             )}
           </Animated.View>

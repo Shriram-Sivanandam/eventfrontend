@@ -5,6 +5,7 @@ import AppInput from '../../components/AppInput';
 import { Spacing } from '../../constants/layout';
 import Colors from '../../constants/colors';
 import { FormState, ErrorState } from '../../constants/types';
+import TagPicker from '../../components/TagPicker';
 
 export default function Page3({
   form,
@@ -12,12 +13,16 @@ export default function Page3({
   onFormChange,
   onOpenDatePicker,
   onOpenTimePicker,
+  selectedTagIds,
+  onTagsChange,
 }: {
   form: FormState;
   errors: ErrorState;
   onFormChange: (key: keyof FormState) => (val: string) => void;
   onOpenDatePicker: () => void;
   onOpenTimePicker: () => void;
+  selectedTagIds: string[];
+  onTagsChange: (ids: string[]) => void;
 }) {
   return (
     <View>
@@ -139,6 +144,13 @@ export default function Page3({
           multiline
         />
       </View>
+
+      <View style={styles.fieldWrap}>
+        <AppText variant="caption" style={styles.inputLabel}>
+          Event Tags <AppText style={styles.tagOptional}>(up to 3)</AppText>
+        </AppText>
+        <TagPicker selectedTagIds={selectedTagIds} onChange={onTagsChange} />
+      </View>
     </View>
   );
 }
@@ -173,5 +185,9 @@ const styles = StyleSheet.create({
   },
   dateBtn: {
     flex: 1,
+  },
+  tagOptional: {
+    fontWeight: '400',
+    color: Colors.light.secondaryText,
   },
 });
