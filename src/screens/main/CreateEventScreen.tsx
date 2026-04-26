@@ -60,6 +60,22 @@ export default function CreateEventScreen() {
     }
   };
 
+  function isValidMapsLink(url: string): boolean {
+    if (!url.trim()) return true;
+    try {
+      const parsed = new URL(url) as any;
+      const host = parsed.hostname.toLowerCase();
+      return (
+        host === 'maps.google.com' ||
+        (host === 'www.google.com' && parsed.pathname.startsWith('/maps')) ||
+        host === 'goo.gl' ||
+        host === 'maps.app.goo.gl'
+      );
+    } catch {
+      return false;
+    }
+  }
+
   const validateStep = (s: number): boolean => {
     const e: ErrorState = {};
     if (s === 0) if (!form.title.trim()) e.title = 'Event title is required';
@@ -68,6 +84,8 @@ export default function CreateEventScreen() {
         e.location = 'Enter a location name or landmark';
       if (!form.city.trim()) e.city = 'City is required';
       if (!form.pincode.trim()) e.pincode = 'Pincode is required';
+      if (form.maps_link.trim() && !isValidMapsLink(form.maps_link))
+        e.maps_link = 'Please enter a valid Google Maps link.';
     }
     if (s === 2) {
       if (!form.price.trim()) e.price = 'Enter a price (0 for free)';
