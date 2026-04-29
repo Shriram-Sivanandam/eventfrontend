@@ -179,6 +179,7 @@ export default function CreateEventScreen() {
     data.append('capacity', form.capacity);
     data.append('things_to_bring', form.things_to_bring);
     data.append('things_provided', form.things_provided);
+    selectedTagIds.forEach(id => data.append('tag_ids', id));
 
     if (image) {
       data.append('image', {
