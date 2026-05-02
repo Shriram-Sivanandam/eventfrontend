@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   Image,
   StatusBar,
@@ -17,6 +16,7 @@ import { HostProfile } from '../../constants/types';
 import RegisteredEventCard from '../../components/RegisteredEventCard';
 import Colors from '../../constants/colors';
 import Screen from '../../components/Screen';
+import PageHeader from '../../components/PageHeader';
 
 const IMAGE_BASE = 'http://10.0.2.2:8080';
 
@@ -175,12 +175,12 @@ export default function HostProfileScreen() {
 
   if (loading || !profile) {
     return (
-      <View style={styles.container}>
+      <Screen>
         <StatusBar barStyle="dark-content" backgroundColor="#F5F0E8" />
         <View style={styles.loadingWrap}>
           <AppText style={styles.loadingText}>Loading profile…</AppText>
         </View>
-      </View>
+      </Screen>
     );
   }
 
@@ -193,7 +193,10 @@ export default function HostProfileScreen() {
 
   return (
     <Screen>
-      <StatusBar barStyle="dark-content" backgroundColor="#F5F0E8" />
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor={Colors.light.primaryText}
+      />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -205,20 +208,9 @@ export default function HostProfileScreen() {
           />
         }
       >
-        {/* ── Header ── */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={20} color="#1A0A00" />
-          </TouchableOpacity>
-        </View>
+        <PageHeader title="Host Profile" />
 
-        {/* ── Profile card ── */}
         <View style={styles.profileCard}>
-          {/* Avatar */}
           <View style={styles.avatarWrap}>
             {avatarUri ? (
               <Image
@@ -237,11 +229,14 @@ export default function HostProfileScreen() {
 
           <AppText style={styles.displayName}>{displayName}</AppText>
 
-          {/* City + age + gender chips */}
           <View style={styles.chipRow}>
             {profile.city && (
               <View style={styles.chip}>
-                <Ionicons name="location-outline" size={11} color="#8A7B6B" />
+                <Ionicons
+                  name="location-outline"
+                  size={11}
+                  color={Colors.light.secondaryText}
+                />
                 <AppText style={styles.chipText}>{profile.city}</AppText>
               </View>
             )}
@@ -259,11 +254,9 @@ export default function HostProfileScreen() {
             )}
           </View>
 
-          {/* Bio */}
           {profile.bio && <AppText style={styles.bio}>{profile.bio}</AppText>}
         </View>
 
-        {/* ── Activity stats ── */}
         <View style={styles.statsCard}>
           <StatItem value={profile.total_hosted} label="Hosted" />
           <View style={styles.statsDivider} />
@@ -272,7 +265,6 @@ export default function HostProfileScreen() {
           <StatItem value={profile.total_ratings} label="Reviews" />
         </View>
 
-        {/* ── Ratings ── */}
         <View style={styles.sectionWrap}>
           <AppText style={styles.sectionLabel}>Ratings</AppText>
           <View style={styles.ratingsRow}>
@@ -280,20 +272,18 @@ export default function HostProfileScreen() {
               label="As a Host"
               score={profile.hosting_rating ?? undefined}
               count={profile.total_ratings}
-              accent="#FF6B35"
+              accent={Colors.light.primary}
               icon="megaphone-outline"
             />
-            <View style={{ width: 10 }} />
             <RatingCard
               label="As Attendee"
               score={profile.attendee_rating ?? undefined}
-              accent="#2EC4B6"
+              accent={Colors.light.primary}
               icon="person-outline"
             />
           </View>
         </View>
 
-        {/* ── Past events ── */}
         <View style={styles.sectionWrap}>
           <AppText style={styles.sectionLabel}>
             Past Events{' '}
@@ -327,19 +317,11 @@ export default function HostProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F0E8' },
   loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingText: { fontSize: 14, color: '#8A7B6B', fontWeight: '500' },
-  header: {
-    paddingBottom: Spacing.sm,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#F0EBE3',
-    alignItems: 'center',
-    justifyContent: 'center',
+  loadingText: {
+    fontSize: 14,
+    color: Colors.light.secondaryText,
+    fontWeight: '500',
   },
   profileCard: {
     backgroundColor: Colors.light.tertiarySurface,
@@ -427,7 +409,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
     marginLeft: Spacing.xs,
   },
-  ratingsRow: { flexDirection: 'row' },
+  ratingsRow: { flexDirection: 'row', gap: Spacing.md },
   emptyEvents: { alignItems: 'center', paddingVertical: 32 },
   emptyEmoji: { fontSize: 36, marginBottom: 8 },
   emptyText: {

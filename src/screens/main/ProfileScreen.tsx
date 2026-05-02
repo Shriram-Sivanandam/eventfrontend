@@ -59,7 +59,7 @@ export default function ProfileScreen() {
   const displayName = user?.name || user?.email?.split('@')[0] || '';
 
   return (
-    <Screen style={styles.container}>
+    <Screen>
       <StatusBar barStyle="dark-content" backgroundColor="#FFFDF8" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -188,10 +188,6 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingTop: Spacing.xxl,
-    backgroundColor: Colors.light.surface,
-  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -177,7 +177,6 @@ export default function RegisteredEventCard({
               </AppText>
             </View>
 
-            {/* Location */}
             {(event.location || event.city) && (
               <View style={card.metaRow}>
                 <Ionicons
