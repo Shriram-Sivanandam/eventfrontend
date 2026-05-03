@@ -60,6 +60,7 @@ export default function EventDetailsScreen() {
   const thingsProvided: string[] = event.things_provided
     ? event.things_provided.split(',').filter(Boolean)
     : [];
+  const tags = route.params.event.tags ?? [];
 
   const [loading, setLoading] = useState(false);
   const [joined, setJoined] = useState(event.joined);
@@ -123,6 +124,16 @@ export default function EventDetailsScreen() {
         <AppText variant="title" style={styles.eventTitle}>
           {event.title}
         </AppText>
+        <View style={styles.tagsRow}>
+          {tags.slice(0, 3).map((tag: any) => (
+            <View key={tag.id} style={styles.tagPill}>
+              <AppText style={styles.tagText}>{tag.name}</AppText>
+            </View>
+          ))}
+          {tags.length > 3 && (
+            <AppText style={styles.tagOverflow}>+{tags.length - 2}</AppText>
+          )}
+        </View>
         <View style={styles.dateRow}>
           <View style={styles.datePill}>
             <AppText
@@ -355,7 +366,6 @@ const styles = StyleSheet.create({
   },
   eventTitle: {
     letterSpacing: -0.5,
-    marginBottom: Spacing.md,
   },
   dateRow: {
     flexDirection: 'row',
@@ -465,5 +475,29 @@ const styles = StyleSheet.create({
     color: Colors.light.primary,
     fontWeight: '800',
     fontSize: 14,
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.xs,
+    marginVertical: Spacing.sm,
+  },
+  tagPill: {
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: Radius.pill,
+    backgroundColor: Colors.light.surface,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+  },
+  tagText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.light.primaryText,
+  },
+  tagOverflow: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.light.secondaryText,
   },
 });

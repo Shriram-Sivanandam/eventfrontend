@@ -18,6 +18,7 @@ import Screen from '../../components/Screen';
 import Colors from '../../constants/colors';
 import RegisteredEventCard from '../../components/RegisteredEventCard';
 import { Event } from '../../constants/types';
+import RatingModal from '../../components/RatingModal';
 
 type Tab = 'upcoming' | 'past';
 
@@ -107,6 +108,7 @@ export default function RegisteredEventsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<Tab>('upcoming');
+  const [ratingEvent, setRatingEvent] = useState<Event | null>(null);
 
   const fetchEvents = useCallback(async (isRefresh = false) => {
     if (isRefresh) setRefreshing(true);
@@ -149,6 +151,13 @@ export default function RegisteredEventsScreen() {
         },
       ],
     );
+  };
+
+  const handleRatingSubmitted = (eventId: string) => {
+    setEvents(prev =>
+      prev.map(e => (e.id === eventId ? { ...e, has_rated: true } : e)),
+    );
+    setRatingEvent(null);
   };
 
   return (
@@ -204,9 +213,23 @@ export default function RegisteredEventsScreen() {
             isPast={!isUpcoming(item.event_start)}
             onPress={() => navigation.navigate('EventDetails', { event: item })}
             onLeave={() => handleLeave(item)}
+            onRate={() => setRatingEvent(item)}
           />
         )}
       />
+      {ratingEvent && (
+        <RatingModal
+          visible={!!ratingEvent}
+          event={{
+            id: ratingEvent.id,
+            title: ratingEvent.title,
+            image_url: ratingEvent.image_url,
+            host_user_id: ratingEvent.id ?? '',
+          }}
+          onClose={() => setRatingEvent(null)}
+          onSubmitted={() => handleRatingSubmitted(ratingEvent.id)}
+        />
+      )}
     </Screen>
   );
 }

@@ -33,6 +33,7 @@ export type Event = {
   registrant_count?: number;
   things_to_bring?: string;
   things_provided?: string;
+  has_rated?: boolean;
 };
 
 export type FilterTab = 'all' | 'pending' | 'accepted' | 'rejected';

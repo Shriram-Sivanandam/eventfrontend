@@ -105,12 +105,14 @@ export default function RegisteredEventCard({
   isBottomRow = true,
   onPress,
   onLeave,
+  onRate,
 }: {
   event: Event;
   isPast: boolean;
   isBottomRow?: boolean;
   onPress: () => void;
   onLeave?: () => void;
+  onRate: () => void;
 }) {
   const { time, fullDate } = formatDate(event.event_start);
   const accent = getAccent(event.title);
@@ -207,6 +209,41 @@ export default function RegisteredEventCard({
                 >
                   {event.price > 0 ? `₹${event.price}` : 'Free'}
                 </AppText>
+              </View>
+
+              <View style={card.actionBtns}>
+                {isPast && !event.has_rated && (
+                  <TouchableOpacity
+                    style={card.rateBtn}
+                    onPress={onRate}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons name="star-outline" size={13} color="#FFBE0B" />
+                    <AppText style={card.rateBtnText}>Rate</AppText>
+                  </TouchableOpacity>
+                )}
+
+                {isPast && event.has_rated && (
+                  <View style={card.ratedBadge}>
+                    <Ionicons name="star" size={12} color="#FFBE0B" />
+                    <AppText style={card.ratedText}>Rated</AppText>
+                  </View>
+                )}
+
+                {!isPast && (
+                  <TouchableOpacity
+                    style={card.leaveBtn}
+                    onPress={onLeave}
+                    activeOpacity={0.7}
+                  >
+                    <Ionicons
+                      name="close-circle-outline"
+                      size={13}
+                      color="#E63946"
+                    />
+                    <AppText style={card.leaveBtnText}>Cancel</AppText>
+                  </TouchableOpacity>
+                )}
               </View>
 
               {!isPast && (
@@ -330,4 +367,27 @@ const card = StyleSheet.create({
     fontWeight: '700',
     color: Colors.light.danger,
   },
+  actionBtns: { flexDirection: 'row', gap: 6, alignItems: 'center' },
+  rateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#FFBE0B15',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FFBE0B40',
+  },
+  rateBtnText: { fontSize: 11, fontWeight: '700', color: '#FFBE0B' },
+  ratedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: '#FFBE0B10',
+  },
+  ratedText: { fontSize: 11, fontWeight: '600', color: '#C4BAB0' },
 });
