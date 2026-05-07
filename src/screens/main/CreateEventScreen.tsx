@@ -22,6 +22,7 @@ import Page2 from '../createEvent/Page2';
 import Page3 from '../createEvent/Page3';
 import FormStepBar from '../../components/FormStepBar';
 import PageHeader from '../../components/PageHeader';
+import SuccessOverlay from '../../components/SuccessOverlay';
 
 const TOTAL_STEPS = 3;
 
@@ -30,6 +31,7 @@ export default function CreateEventScreen() {
   const [image, setImage] = useState<any>(null);
   const [step, setStep] = useState(0);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
+  const [showSuccess, setShowSuccess] = useState(false);
   const slideAnimation = useRef(new Animated.Value(0)).current;
 
   const [form, setForm] = useState<FormState>({
@@ -193,8 +195,7 @@ export default function CreateEventScreen() {
       await api.post('/events', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      navigation.goBack();
+      setShowSuccess(true);
     } catch (err: any) {
       console.log('SERVER ERROR:', err);
     }
@@ -257,6 +258,16 @@ export default function CreateEventScreen() {
             Step {step + 1} of {TOTAL_STEPS}
           </AppText>
         </View>
+        <SuccessOverlay
+          visible={showSuccess}
+          emoji="🎟️"
+          title="You're in!"
+          subtitle={`See you at the event!!!`}
+          onDone={() => {
+            setShowSuccess(false);
+            navigation.goBack();
+          }}
+        />
       </Screen>
     </KeyboardAvoidingView>
   );

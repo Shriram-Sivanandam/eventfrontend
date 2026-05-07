@@ -19,6 +19,7 @@ import { Radius, Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import HostedByCard from '../../components/HostedbyCard';
+import { useToast } from '../../context/ToastContext';
 
 function formatDuration(minutes: number) {
   if (!minutes) return null;
@@ -34,6 +35,7 @@ export default function EventDetailsScreen() {
   const navigation = useNavigation<any>();
   const [event, setEvent] = useState(route.params.event);
 
+  const { showToast } = useToast();
   const startDate = new Date(event.event_start);
   const day = startDate.getDate();
   const dayShort = startDate.toLocaleDateString('en-US', { weekday: 'short' });
@@ -84,6 +86,7 @@ export default function EventDetailsScreen() {
     try {
       setLoading(true);
       await api.post(`/events/${event.id}/join`);
+      showToast({ type: 'success', message: 'Done!' });
       setJoined(true);
     } catch (err) {
       console.log('JOIN ERROR', err);
