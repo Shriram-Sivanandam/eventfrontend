@@ -445,8 +445,9 @@ export default function EventDashboard() {
                       onReject={() => confirmUpdate(reg, 'rejected')}
                       onPending={() => confirmUpdate(reg, 'pending')}
                       onViewProfile={() =>
-                        navigation.navigate('UserProfile', {
-                          userId: reg.user_id,
+                        navigation.navigate('HostProfile', {
+                          hostId: reg.user_id,
+                          profileType: 'user',
                         })
                       }
                     />

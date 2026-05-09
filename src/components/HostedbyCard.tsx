@@ -62,7 +62,12 @@ export default function HostedByCard({
   return (
     <TouchableOpacity
       style={styles.card}
-      onPress={() => navigation.navigate('HostProfile', { hostId: hostUserId })}
+      onPress={() =>
+        navigation.navigate('HostProfile', {
+          hostId: hostUserId,
+          profileType: 'host',
+        })
+      }
       activeOpacity={0.85}
     >
       {/* Label */}

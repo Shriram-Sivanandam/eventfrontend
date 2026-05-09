@@ -147,7 +147,7 @@ const stat = StyleSheet.create({
 export default function HostProfileScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
-  const { hostId } = route.params;
+  const { hostId, profileType } = route.params;
 
   const [profile, setProfile] = useState<HostProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -208,7 +208,9 @@ export default function HostProfileScreen() {
           />
         }
       >
-        <PageHeader title="Host Profile" />
+        <PageHeader
+          title={profileType === 'host' ? 'Host Profile' : 'User Profile'}
+        />
 
         <View style={styles.profileCard}>
           <View style={styles.avatarWrap}>
