@@ -16,11 +16,13 @@ import {
 } from 'react-native';
 import AppText from '../../components/AppText';
 import api from '../../api/client';
-import { Spacing } from '../../constants/layout';
+import { Radius, Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
 import { INDIAN_CITIES } from '../../data/IndianCities.ts';
 import { useAuth } from '../../context/AuthContext';
+import Colors from '../../constants/colors.js';
+import Screen from '../../components/Screen';
 
 const GENDER_OPTIONS = [
   { value: 'male', label: 'Male', icon: '♂️' },
@@ -56,13 +58,23 @@ function ProgressDots({ step }: { step: number }) {
 const pd = StyleSheet.create({
   row: {
     flexDirection: 'row',
-    gap: 6,
+    gap: Spacing.sm,
     justifyContent: 'center',
     marginBottom: 32,
   },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#EDE8DF' },
-  dotActive: { width: 20, backgroundColor: '#FF6B35' },
-  dotDone: { backgroundColor: '#FF6B3560' },
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: Radius.pill,
+    backgroundColor: Colors.light.border,
+  },
+  dotActive: {
+    width: 20,
+    backgroundColor: Colors.light.primary,
+  },
+  dotDone: {
+    backgroundColor: Colors.light.primary + '80',
+  },
 });
 
 function CitySheet({
@@ -539,7 +551,7 @@ export default function OnboardingScreen() {
       style={{ flex: 1 }}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
-      <View style={styles.container}>
+      <Screen>
         <View style={styles.header}>
           {step > 0 ? (
             <TouchableOpacity
@@ -610,14 +622,12 @@ export default function OnboardingScreen() {
             )}
           </TouchableOpacity>
         </View>
-      </View>
+      </Screen>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F0E8' },
-
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -629,7 +639,7 @@ const styles = StyleSheet.create({
   backBtn: {
     width: 38,
     height: 38,
-    borderRadius: 19,
+    borderRadius: Radius.pill,
     backgroundColor: '#F0EBE3',
     alignItems: 'center',
     justifyContent: 'center',

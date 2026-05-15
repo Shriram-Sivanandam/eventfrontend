@@ -1,18 +1,13 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import AuthStack from './AuthStack';
 import EventsStack from './EventsStack';
 import { useAuth } from '../context/AuthContext';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RootNavigator() {
-  const { token, setToken, onboardingComplete, isLoading } = useAuth();
-
-  useEffect(() => {
-    AsyncStorage.getItem('token').then(setToken);
-  }, [setToken]);
+  const { token, onboardingComplete, isLoading } = useAuth();
 
   if (isLoading) {
     return (
