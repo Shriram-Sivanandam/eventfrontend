@@ -7,29 +7,20 @@ import {
   ScrollView,
   Image,
   Animated,
-  KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
-  Modal,
-  FlatList,
   Alert,
 } from 'react-native';
 import AppText from '../../components/AppText';
 import api from '../../api/client';
-import { Radius, Spacing } from '../../constants/layout';
+import { Radius, Shadows, Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary, launchCamera } from 'react-native-image-picker';
-import { INDIAN_CITIES } from '../../data/IndianCities.ts';
 import { useAuth } from '../../context/AuthContext';
 import Colors from '../../constants/colors.js';
 import Screen from '../../components/Screen';
-
-const GENDER_OPTIONS = [
-  { value: 'male', label: 'Male', icon: '♂️' },
-  { value: 'female', label: 'Female', icon: '♀️' },
-  { value: 'non_binary', label: 'Non-binary', icon: '⚧️' },
-  { value: 'prefer_not_to_say', label: 'Prefer not to say', icon: '🔒' },
-];
+import PageHeader from '../../components/PageHeader.tsx';
+import CitySheet from '../../components/CitySheet.tsx';
+import { GENDER_OPTIONS } from '../../constants/values';
 
 const STEPS = [
   { id: 'welcome', title: null },
@@ -75,151 +66,6 @@ const pd = StyleSheet.create({
   dotDone: {
     backgroundColor: Colors.light.primary + '80',
   },
-});
-
-function CitySheet({
-  visible,
-  selected,
-  onSelect,
-  onClose,
-}: {
-  visible: boolean;
-  selected: string;
-  onSelect: (c: string) => void;
-  onClose: () => void;
-}) {
-  const [query, setQuery] = useState('');
-  const inputRef = useRef<TextInput>(null);
-
-  useEffect(() => {
-    if (visible) {
-      setQuery('');
-      setTimeout(() => inputRef.current?.focus(), 120);
-    }
-  }, [visible]);
-
-  const filtered = query.trim()
-    ? INDIAN_CITIES.filter(c => c.toLowerCase().includes(query.toLowerCase()))
-    : INDIAN_CITIES;
-
-  return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      statusBarTranslucent
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={css.backdrop}
-        activeOpacity={1}
-        onPress={onClose}
-      />
-      <View style={css.sheet}>
-        <View style={css.handle} />
-        <AppText style={css.title}>Select City</AppText>
-        <View style={css.searchWrap}>
-          <Ionicons name="search-outline" size={16} color="#8A7B6B" />
-          <TextInput
-            ref={inputRef}
-            style={css.searchInput}
-            value={query}
-            onChangeText={setQuery}
-            placeholder="Search cities..."
-            placeholderTextColor="#C4BAB0"
-          />
-        </View>
-        <FlatList
-          data={filtered}
-          keyExtractor={i => i}
-          style={{ flexShrink: 1 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => {
-            const sel = item === selected;
-            return (
-              <TouchableOpacity
-                style={[css.cityRow, sel && css.cityRowSel]}
-                onPress={() => {
-                  onSelect(item);
-                  onClose();
-                }}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={sel ? 'location' : 'location-outline'}
-                  size={15}
-                  color={sel ? '#FF6B35' : '#8A7B6B'}
-                />
-                <AppText style={[css.cityName, sel && css.cityNameSel]}>
-                  {item}
-                </AppText>
-                {sel && (
-                  <Ionicons name="checkmark-circle" size={17} color="#FF6B35" />
-                )}
-              </TouchableOpacity>
-            );
-          }}
-        />
-        <View style={{ height: 24 }} />
-      </View>
-    </Modal>
-  );
-}
-
-const css = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(26,10,0,0.4)' },
-  sheet: {
-    backgroundColor: '#FFFDF8',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: Spacing.md,
-    paddingTop: 12,
-    maxHeight: '80%',
-  },
-  handle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#EDE8DF',
-    alignSelf: 'center',
-    marginBottom: 14,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#1A0A00',
-    marginBottom: 14,
-  },
-  searchWrap: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#F5F0E8',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    marginBottom: 10,
-  },
-  searchInput: { flex: 1, fontSize: 14, color: '#1A0A00', padding: 0 },
-  cityRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingVertical: 13,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F5F0E8',
-  },
-  cityRowSel: {
-    backgroundColor: '#FF6B3508',
-    borderRadius: 10,
-    borderBottomColor: 'transparent',
-    paddingHorizontal: 8,
-    marginHorizontal: -4,
-  },
-  cityName: { flex: 1, fontSize: 15, fontWeight: '500', color: '#1A0A00' },
-  cityNameSel: { fontWeight: '700', color: '#FF6B35' },
 });
 
 export default function OnboardingScreen() {
@@ -305,6 +151,10 @@ export default function OnboardingScreen() {
     return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
   };
 
+  const handleCitySelect = (cityVal: string | null) => {
+    setCity(cityVal ?? '');
+  };
+
   const pickAvatar = () => {
     Alert.alert('Profile Photo', 'Choose a source', [
       {
@@ -333,6 +183,7 @@ export default function OnboardingScreen() {
     try {
       const data = new FormData();
       data.append('name', name.trim());
+      data.append('onboarding', 'true');
       if (dob) data.append('date_of_birth', dobToISO(dob));
       if (city) data.append('city', city);
       if (gender) data.append('gender', gender);
@@ -344,12 +195,12 @@ export default function OnboardingScreen() {
           name: avatar.fileName || 'avatar.jpg',
         } as any);
       }
-      await api.post('/auth/onboarding', data, {
+      await api.patch('/auth/me', data, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setOnboardingComplete(true);
     } catch (err: any) {
-      console.log('ONBOARDING ERROR', err.response?.data);
+      console.log('ONBOARDING ERROR', err);
     } finally {
       setSaving(false);
     }
@@ -382,7 +233,7 @@ export default function OnboardingScreen() {
               value={name}
               onChangeText={setName}
               placeholder="Your full name"
-              placeholderTextColor="#C4BAB0"
+              placeholderTextColor={Colors.light.secondaryText}
               autoFocus
               returnKeyType="done"
               onSubmitEditing={() => canContinue() && goNext()}
@@ -401,7 +252,7 @@ export default function OnboardingScreen() {
               value={dob}
               onChangeText={handleDobChange}
               placeholder="DD / MM / YYYY"
-              placeholderTextColor="#C4BAB0"
+              placeholderTextColor={Colors.light.secondaryText}
               keyboardType="numeric"
               maxLength={10}
               autoFocus
@@ -430,7 +281,7 @@ export default function OnboardingScreen() {
               <Ionicons
                 name={city ? 'location' : 'location-outline'}
                 size={18}
-                color={city ? '#FF6B35' : '#8A7B6B'}
+                color={city ? Colors.light.primary : Colors.light.secondaryText}
               />
               <AppText
                 style={[
@@ -440,15 +291,19 @@ export default function OnboardingScreen() {
               >
                 {city || 'Tap to select your city'}
               </AppText>
-              <Ionicons name="chevron-down" size={16} color="#C4BAB0" />
+              <Ionicons
+                name="chevron-down"
+                size={16}
+                color={Colors.light.secondaryText}
+              />
             </TouchableOpacity>
             <AppText style={styles.fieldHint}>
               Helps people find local events.
             </AppText>
             <CitySheet
               visible={citySheet}
-              selected={city}
-              onSelect={setCity}
+              selectedCity={city || null}
+              onSelect={handleCitySelect}
               onClose={() => setCitySheet(false)}
             />
           </View>
@@ -476,7 +331,7 @@ export default function OnboardingScreen() {
                     <Ionicons
                       name="checkmark-circle"
                       size={20}
-                      color="#FF6B35"
+                      color={Colors.light.primary}
                     />
                   )}
                 </TouchableOpacity>
@@ -489,7 +344,7 @@ export default function OnboardingScreen() {
         return (
           <View style={styles.photoWrap}>
             <TouchableOpacity
-              style={styles.avatarPicker}
+              style={avatar ? styles.avatarPickerFilled : styles.avatarPicker}
               onPress={pickAvatar}
               activeOpacity={0.85}
             >
@@ -501,7 +356,11 @@ export default function OnboardingScreen() {
                 />
               ) : (
                 <View style={styles.avatarEmpty}>
-                  <Ionicons name="camera-outline" size={36} color="#C4BAB0" />
+                  <Ionicons
+                    name="camera-outline"
+                    size={36}
+                    color={Colors.light.secondaryText}
+                  />
                   <AppText style={styles.avatarEmptyText}>
                     Tap to add photo
                   </AppText>
@@ -531,7 +390,7 @@ export default function OnboardingScreen() {
               value={phone}
               onChangeText={setPhone}
               placeholder="+91 98765 43210"
-              placeholderTextColor="#C4BAB0"
+              placeholderTextColor={Colors.light.secondaryText}
               keyboardType="phone-pad"
               autoFocus
             />
@@ -547,103 +406,77 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <Screen>
-        <View style={styles.header}>
-          {step > 0 ? (
-            <TouchableOpacity
-              style={styles.backBtn}
-              onPress={goBack}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="arrow-back" size={20} color="#1A0A00" />
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.backBtn} />
-          )}
-          {(currentStep.id === 'photo' || currentStep.id === 'phone') && (
-            <TouchableOpacity
-              onPress={isLastStep ? submit : goNext}
-              activeOpacity={0.7}
-            >
-              <AppText style={styles.skipText}>Skip</AppText>
-            </TouchableOpacity>
-          )}
-        </View>
+    <Screen>
+      <PageHeader
+        title="Profile"
+        onPressBack={goBack}
+        rightComponent={
+          <View>
+            {(currentStep.id === 'photo' || currentStep.id === 'phone') && (
+              <TouchableOpacity
+                onPress={isLastStep ? submit : goNext}
+                activeOpacity={0.7}
+              >
+                <AppText style={styles.skipText}>Skip</AppText>
+              </TouchableOpacity>
+            )}
+          </View>
+        }
+      />
 
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <ProgressDots step={step} />
+
+        <Animated.View
+          style={[
+            styles.contentWrap,
+            { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+          ]}
         >
-          <ProgressDots step={step} />
+          {currentStep.title && (
+            <AppText style={styles.stepTitle}>{currentStep.title}</AppText>
+          )}
+          {renderContent()}
+        </Animated.View>
+      </ScrollView>
 
-          <Animated.View
-            style={[
-              styles.contentWrap,
-              { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
-            ]}
-          >
-            {currentStep.title && (
-              <AppText style={styles.stepTitle}>{currentStep.title}</AppText>
-            )}
-            {renderContent()}
-          </Animated.View>
-        </ScrollView>
-
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={[
-              styles.ctaBtn,
-              !canContinue() &&
-                !['photo', 'phone'].includes(currentStep.id) &&
-                styles.ctaBtnDisabled,
-            ]}
-            onPress={isLastStep ? submit : goNext}
-            activeOpacity={0.88}
-            disabled={
-              saving ||
-              (!canContinue() && !['photo', 'phone'].includes(currentStep.id))
-            }
-          >
-            {saving ? (
-              <ActivityIndicator color="#fff" size="small" />
-            ) : (
-              <AppText style={styles.ctaBtnText}>
-                {currentStep.id === 'welcome'
-                  ? "Let's go →"
-                  : isLastStep
-                  ? 'All done →'
-                  : 'Continue →'}
-              </AppText>
-            )}
-          </TouchableOpacity>
-        </View>
-      </Screen>
-    </KeyboardAvoidingView>
+      <View style={styles.footer}>
+        <TouchableOpacity
+          style={[
+            styles.ctaBtn,
+            !canContinue() &&
+              !['photo', 'phone'].includes(currentStep.id) &&
+              styles.ctaBtnDisabled,
+          ]}
+          onPress={isLastStep ? submit : goNext}
+          activeOpacity={0.88}
+          disabled={
+            saving ||
+            (!canContinue() && !['photo', 'phone'].includes(currentStep.id))
+          }
+        >
+          {saving ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <AppText style={styles.ctaBtnText}>
+              {currentStep.id === 'welcome'
+                ? "Let's go →"
+                : isLastStep
+                ? 'All done →'
+                : 'Continue →'}
+            </AppText>
+          )}
+        </TouchableOpacity>
+      </View>
+    </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: Spacing.md,
-    paddingTop: 56,
-    paddingBottom: Spacing.md,
-  },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: Radius.pill,
-    backgroundColor: '#F0EBE3',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   skipText: { fontSize: 14, fontWeight: '600', color: '#8A7B6B' },
 
   scrollContent: {
@@ -657,32 +490,30 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 30,
     fontWeight: '900',
-    color: '#1A0A00',
-    letterSpacing: -0.8,
+    color: Colors.light.primaryText,
     lineHeight: 36,
     marginBottom: 28,
   },
 
-  welcomeWrap: { alignItems: 'center', paddingTop: 20 },
-  welcomeEmoji: { fontSize: 72, marginBottom: 20 },
+  welcomeWrap: { alignItems: 'center', paddingTop: Spacing.xl },
+  welcomeEmoji: { fontSize: 72, marginBottom: Spacing.xl },
   welcomeTitle: {
     fontSize: 36,
     fontWeight: '900',
-    color: '#1A0A00',
-    letterSpacing: -1,
-    marginBottom: 12,
+    color: Colors.light.primaryText,
+    marginBottom: Spacing.md,
   },
   welcomeSub: {
     fontSize: 16,
-    color: '#5C4F42',
+    color: Colors.light.secondaryText,
     textAlign: 'center',
     lineHeight: 24,
-    marginBottom: 8,
+    marginBottom: Spacing.xs,
     fontWeight: '500',
   },
   welcomeNote: {
     fontSize: 13,
-    color: '#C4BAB0',
+    color: Colors.light.secondaryText,
     fontWeight: '500',
     textAlign: 'center',
   },
@@ -691,112 +522,139 @@ const styles = StyleSheet.create({
   bigInput: {
     fontSize: 22,
     fontWeight: '700',
-    color: '#1A0A00',
+    color: Colors.light.primaryText,
     borderBottomWidth: 2,
-    borderBottomColor: '#FF6B35',
-    paddingVertical: 10,
-    paddingHorizontal: 0,
-    marginBottom: 12,
+    borderBottomColor: Colors.light.primary,
+    paddingVertical: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   fieldHint: {
     fontSize: 13,
-    color: '#C4BAB0',
+    color: Colors.light.secondaryText,
     fontWeight: '400',
-    lineHeight: 18,
   },
   fieldError: {
     fontSize: 12,
-    color: '#E63946',
+    color: Colors.light.danger,
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: Spacing.xs,
   },
 
   selectTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    borderWidth: 1.5,
-    borderColor: '#EDE8DF',
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: '#FFFDF8',
-    marginBottom: 12,
+    gap: Spacing.sm,
+    borderWidth: 2,
+    borderColor: Colors.light.border,
+    borderRadius: Radius.md,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
+    backgroundColor: Colors.light.tertiarySurface,
+    marginBottom: Spacing.md,
   },
-  selectTriggerFilled: { borderColor: '#FF6B35', backgroundColor: '#FF6B3508' },
+  selectTriggerFilled: {
+    borderColor: Colors.light.primary,
+    backgroundColor: Colors.light.primary + '08',
+  },
   selectTriggerText: {
     flex: 1,
     fontSize: 17,
     fontWeight: '600',
-    color: '#1A0A00',
+    color: Colors.light.primaryText,
   },
-  selectTriggerPlaceholder: { color: '#C4BAB0', fontWeight: '400' },
+  selectTriggerPlaceholder: {
+    color: Colors.light.secondaryText,
+    fontWeight: '400',
+  },
 
-  genderOptions: { gap: 10 },
+  genderOptions: { gap: Spacing.sm },
   genderOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    backgroundColor: '#FFFDF8',
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: '#EDE8DF',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    gap: Spacing.md,
+    backgroundColor: Colors.light.tertiarySurface,
+    borderRadius: Radius.md,
+    borderWidth: 2,
+    borderColor: Colors.light.border,
+    paddingHorizontal: Spacing.lg,
+    paddingVertical: Spacing.md,
   },
-  genderOptionSel: { borderColor: '#FF6B35', backgroundColor: '#FF6B3508' },
+  genderOptionSel: {
+    borderColor: Colors.light.primary,
+    backgroundColor: Colors.light.primary + '08',
+  },
   genderEmoji: { fontSize: 22 },
-  genderLabel: { flex: 1, fontSize: 16, fontWeight: '600', color: '#1A0A00' },
-  genderLabelSel: { color: '#FF6B35', fontWeight: '700' },
+  genderLabel: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: Colors.light.primaryText,
+  },
+  genderLabelSel: { color: Colors.light.primary, fontWeight: '700' },
 
   photoWrap: { alignItems: 'center' },
+  avatarPickerFilled: {
+    width: 140,
+    height: 140,
+    borderRadius: Radius.pill,
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+    borderWidth: 4,
+    borderColor: Colors.light.primary,
+    borderStyle: 'solid',
+  },
   avatarPicker: {
     width: 140,
     height: 140,
-    borderRadius: 70,
+    borderRadius: Radius.pill,
     overflow: 'hidden',
-    marginBottom: 12,
+    marginBottom: Spacing.md,
     borderWidth: 2,
-    borderColor: '#EDE8DF',
+    borderColor: Colors.light.border,
     borderStyle: 'dashed',
   },
-  avatarPreview: { width: '100%', height: '100%' },
+  avatarPreview: {
+    width: '100%',
+    height: '100%',
+  },
   avatarEmpty: {
     flex: 1,
-    backgroundColor: '#FAF7F2',
+    backgroundColor: Colors.light.tertiarySurface,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
+    gap: Spacing.xs,
   },
-  avatarEmptyText: { fontSize: 12, color: '#C4BAB0', fontWeight: '500' },
-  removePhoto: { marginBottom: 12 },
-  removePhotoText: { fontSize: 13, color: '#E63946', fontWeight: '600' },
+  avatarEmptyText: {
+    fontSize: 12,
+    color: Colors.light.secondaryText,
+    fontWeight: '500',
+  },
+  removePhoto: { marginBottom: Spacing.md },
+  removePhotoText: {
+    fontSize: 13,
+    color: Colors.light.danger,
+    fontWeight: '600',
+  },
 
   footer: {
     paddingHorizontal: Spacing.lg,
-    paddingBottom: 40,
     paddingTop: Spacing.sm,
   },
   ctaBtn: {
-    backgroundColor: '#FF6B35',
-    borderRadius: 16,
-    paddingVertical: 17,
+    backgroundColor: Colors.light.primary,
+    borderRadius: Radius.md,
+    paddingVertical: Spacing.md,
     alignItems: 'center',
-    shadowColor: '#FF6B35',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 4,
+    ...Shadows.card,
   },
   ctaBtnDisabled: {
-    backgroundColor: '#EDE8DF',
+    backgroundColor: Colors.light.border,
     shadowOpacity: 0,
     elevation: 0,
   },
   ctaBtnText: {
-    color: '#fff',
+    color: Colors.light.tertiaryText,
     fontSize: 16,
     fontWeight: '800',
-    letterSpacing: 0.2,
   },
 });

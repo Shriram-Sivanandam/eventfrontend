@@ -11,11 +11,13 @@ export default function PageHeader({
   subtitle,
   backArrow = true,
   rightComponent,
+  onPressBack,
 }: {
   title: string;
   subtitle?: string;
   backArrow?: boolean;
   rightComponent?: React.ReactNode;
+  onPressBack?: () => void;
 }) {
   const navigation = useNavigation<any>();
   return (
@@ -24,7 +26,7 @@ export default function PageHeader({
         {backArrow && (
           <TouchableOpacity
             style={styles.backBtn}
-            onPress={() => navigation.goBack()}
+            onPress={onPressBack || (() => navigation.goBack())}
             activeOpacity={0.7}
           >
             <Ionicons
