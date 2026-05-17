@@ -216,9 +216,16 @@ export default function EventsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [citySheetOpen, setCitySheetOpen] = useState(false);
 
+  const PAGE_SIZE = 10;
+
   const [search, setSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [offset, setOffset] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [pageLoading, setPageLoading] = useState(false);
+
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const searchBorderAnim = useRef(new Animated.Value(0)).current;
   const borderColor = searchBorderAnim.interpolate({
@@ -226,20 +233,48 @@ export default function EventsScreen() {
     outputRange: ['#EDE8DF', '#FF6B35'],
   });
 
-  const fetchEvents = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    try {
-      const res = await api.get(
-        '/events?from=' + new Date().toISOString() + '&limit=50',
-      );
-      setAllEvents(res.data.events ?? []);
-    } catch (err) {
-      console.log('EVENT FETCH ERROR', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const fetchEvents = useCallback(
+    async (opts: {
+      mode: 'initial' | 'paginate' | 'refresh';
+      searchVal: string;
+      city: string | null;
+      tagId: string | null;
+      currentOffset: number;
+    }) => {
+      if (opts.mode === 'paginate') setPageLoading(true);
+      if (opts.mode === 'refresh') setRefreshing(true);
+      if (opts.mode === 'initial') setLoading(true);
+      try {
+        const qs = new URLSearchParams();
+        qs.set('from', new Date().toISOString());
+        qs.set('limit', String(PAGE_SIZE));
+        qs.set('offset', String(opts.currentOffset));
+        if (opts.searchVal.trim()) qs.set('search', opts.searchVal.trim());
+        if (opts.city) qs.set('city', opts.city);
+        if (opts.tagId) qs.set('tag_id', opts.tagId);
+
+        const res = await api.get('/events?' + qs.toString());
+        const fetched: any[] = res.data.events ?? [];
+        const more: boolean = res.data.has_more ?? fetched.length === PAGE_SIZE;
+
+        if (opts.mode === 'paginate') {
+          setAllEvents(prev => [...prev, ...fetched]);
+        } else {
+          setAllEvents(fetched);
+        }
+
+        setHasMore(more);
+        setOffset(opts.currentOffset + fetched.length);
+      } catch (err) {
+        console.log('EVENT FETCH ERROR', err);
+      } finally {
+        setLoading(false);
+        setPageLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [],
+  );
 
   const fetchTags = useCallback(async () => {
     try {
@@ -250,8 +285,30 @@ export default function EventsScreen() {
     }
   }, []);
 
+  const refetch = (
+    newSearch: string,
+    newCity: string | null,
+    newTagId: string | null,
+  ) => {
+    setOffset(0);
+    setHasMore(true);
+    fetchEvents({
+      mode: 'initial',
+      searchVal: newSearch,
+      city: newCity,
+      tagId: newTagId,
+      currentOffset: 0,
+    });
+  };
+
   useEffect(() => {
-    fetchEvents();
+    fetchEvents({
+      mode: 'initial',
+      searchVal: '',
+      city: null,
+      tagId: null,
+      currentOffset: 0,
+    });
     fetchTags();
   }, [fetchEvents, fetchTags]);
 
@@ -263,10 +320,23 @@ export default function EventsScreen() {
         event.location?.toLowerCase().includes(q) ||
         event.city?.toLowerCase().includes(q);
       if (!match) return false;
+
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        refetch(
+          search,
+          selectedCity,
+          selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+        );
+      }, 400);
     }
     if (selectedCity) {
-      if (!event.city?.toLowerCase().includes(selectedCity.toLowerCase()))
-        return false;
+      setSelectedCity(selectedCity);
+      refetch(
+        search,
+        selectedCity,
+        selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+      );
     }
     if (selectedTagIds.size > 0) {
       const eventTagIds: string[] = (event.tags ?? []).map((t: Tag) => t.id);
@@ -289,9 +359,34 @@ export default function EventsScreen() {
     (search.trim() ? 1 : 0) + (selectedCity ? 1 : 0) + selectedTagIds.size;
 
   const clearAll = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     setSearch('');
     setSelectedCity(null);
     setSelectedTagIds(new Set());
+    refetch('', null, null);
+  };
+
+  const loadMore = () => {
+    if (pageLoading || !hasMore || loading) return;
+    fetchEvents({
+      mode: 'paginate',
+      searchVal: search,
+      city: selectedCity,
+      tagId: selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+      currentOffset: offset,
+    });
+  };
+
+  const handleRefresh = () => {
+    setOffset(0);
+    setHasMore(true);
+    fetchEvents({
+      mode: 'refresh',
+      searchVal: search,
+      city: selectedCity,
+      tagId: selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+      currentOffset: 0,
+    });
   };
 
   const ListHeader = (
@@ -408,7 +503,7 @@ export default function EventsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => fetchEvents(true)}
+            onRefresh={handleRefresh} // ← was onRefresh
             tintColor="#FF6B35"
           />
         }
@@ -420,6 +515,17 @@ export default function EventsScreen() {
           />
         }
         renderItem={({ item }) => <EventCard event={item} />}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={
+          pageLoading ? (
+            <ActivityIndicator
+              color={Colors.light.primary}
+              size="small"
+              style={{ paddingVertical: 20 }}
+            />
+          ) : null
+        }
       />
 
       <CitySheet
