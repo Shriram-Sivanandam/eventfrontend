@@ -312,40 +312,26 @@ export default function EventsScreen() {
     fetchTags();
   }, [fetchEvents, fetchTags]);
 
-  const filteredEvents = allEvents.filter(event => {
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      const match =
-        event.title?.toLowerCase().includes(q) ||
-        event.location?.toLowerCase().includes(q) ||
-        event.city?.toLowerCase().includes(q);
-      if (!match) return false;
-
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-      debounceRef.current = setTimeout(() => {
-        refetch(
-          search,
-          selectedCity,
-          selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
-        );
-      }, 400);
-    }
-    if (selectedCity) {
-      setSelectedCity(selectedCity);
+  const handleSearchChange = (text: string) => {
+    setSearch(text);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
       refetch(
-        search,
+        text,
         selectedCity,
         selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
       );
-    }
-    if (selectedTagIds.size > 0) {
-      const eventTagIds: string[] = (event.tags ?? []).map((t: Tag) => t.id);
-      for (const tagId of selectedTagIds) {
-        if (!eventTagIds.includes(tagId)) return false;
-      }
-    }
-    return true;
-  });
+    }, 400);
+  };
+
+  const handleCitySelect = (city: string | null) => {
+    setSelectedCity(city);
+    refetch(
+      search,
+      city,
+      selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+    );
+  };
 
   const toggleTag = (id: string) => {
     setSelectedTagIds(prev => {
@@ -396,7 +382,15 @@ export default function EventsScreen() {
         <TextInput
           style={sb.input}
           value={search}
-          onChangeText={setSearch}
+          onChangeText={handleSearchChange}
+          onSubmitEditing={() => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            refetch(
+              search,
+              selectedCity,
+              selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+            );
+          }}
           placeholder="Search events, places..."
           placeholderTextColor="#C4BAB0"
           onFocus={() =>
@@ -417,7 +411,7 @@ export default function EventsScreen() {
         />
         {search.length > 0 && (
           <TouchableOpacity
-            onPress={() => setSearch('')}
+            onPress={() => handleSearchChange('')}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
             <Ionicons name="close-circle" size={17} color="#C4BAB0" />
@@ -447,7 +441,7 @@ export default function EventsScreen() {
 
       <View style={styles.resultRow}>
         <AppText style={styles.resultCount}>
-          {filteredEvents.length} event{filteredEvents.length !== 1 ? 's' : ''}
+          {allEvents.length} event{allEvents.length !== 1 ? 's' : ''}
           {activeFilterCount > 0 ? ' found' : ' upcoming'}
         </AppText>
         {activeFilterCount > 0 && (
@@ -493,7 +487,7 @@ export default function EventsScreen() {
       />
 
       <FlatList
-        data={filteredEvents}
+        data={allEvents}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
@@ -503,7 +497,7 @@ export default function EventsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={handleRefresh} // ← was onRefresh
+            onRefresh={handleRefresh}
             tintColor="#FF6B35"
           />
         }
@@ -531,7 +525,7 @@ export default function EventsScreen() {
       <CitySheet
         visible={citySheetOpen}
         selectedCity={selectedCity}
-        onSelect={setSelectedCity}
+        onSelect={handleCitySelect}
         onClose={() => setCitySheetOpen(false)}
       />
 
