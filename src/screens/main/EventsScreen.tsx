@@ -1,4 +1,11 @@
-import React, { useEffect, useState, useCallback, useRef, memo } from 'react';
+import React, {
+  useEffect,
+  useState,
+  useCallback,
+  useRef,
+  memo,
+  useMemo,
+} from 'react';
 import {
   View,
   FlatList,
@@ -207,16 +214,142 @@ const es = StyleSheet.create({
   },
 });
 
+function FilteringBar({ visible }: { visible: boolean }) {
+  const width = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (visible) {
+      width.setValue(0);
+      Animated.timing(width, {
+        toValue: 1,
+        duration: 1200,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [visible, width]);
+
+  if (!visible) return null;
+
+  return (
+    <View
+      style={{
+        height: 2,
+        backgroundColor: '#EDE8DF',
+        borderRadius: 1,
+        marginBottom: 4,
+      }}
+    >
+      <Animated.View
+        style={{
+          height: '100%',
+          width: width.interpolate({
+            inputRange: [0, 1],
+            outputRange: ['0%', '90%'],
+          }),
+          backgroundColor: '#FF6B35',
+          borderRadius: 1,
+        }}
+      />
+    </View>
+  );
+}
+
+function SkeletonCard() {
+  const shimmer = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(shimmer, {
+          toValue: 1,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+        Animated.timing(shimmer, {
+          toValue: 0,
+          duration: 800,
+          useNativeDriver: true,
+        }),
+      ]),
+    ).start();
+  }, [shimmer]);
+
+  const opacity = shimmer.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.5, 1],
+  });
+
+  return (
+    <Animated.View style={[sk.card, { opacity }]}>
+      <View style={sk.image} />
+      <View style={sk.body}>
+        <View style={sk.topRow}>
+          <View style={sk.dateBlock} />
+          <View style={sk.titleBlock}>
+            <View style={sk.titleLine} />
+            <View style={sk.subtitleLine} />
+          </View>
+        </View>
+        <View style={sk.metaLine} />
+        <View style={sk.divider} />
+        <View style={sk.footer}>
+          <View style={sk.tag} />
+          <View style={sk.tag} />
+        </View>
+      </View>
+    </Animated.View>
+  );
+}
+
+const G = '#EDE8DF'; // skeleton grey
+const sk = StyleSheet.create({
+  card: {
+    backgroundColor: '#FFFDF8',
+    borderRadius: 18,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    borderColor: '#EDE8DF',
+    marginBottom: Spacing.lg,
+  },
+  image: { height: 175, backgroundColor: G },
+  body: { padding: 14 },
+  topRow: { flexDirection: 'row', gap: 12, marginBottom: 10 },
+  dateBlock: { width: 46, height: 52, borderRadius: 10, backgroundColor: G },
+  titleBlock: { flex: 1, justifyContent: 'center', gap: 8 },
+  titleLine: { height: 14, borderRadius: 6, backgroundColor: G, width: '80%' },
+  subtitleLine: {
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: G,
+    width: '50%',
+  },
+  metaLine: {
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: G,
+    width: '60%',
+    marginBottom: 10,
+  },
+  divider: { height: 1, backgroundColor: G, marginVertical: 10 },
+  footer: { flexDirection: 'row', gap: 8 },
+  tag: { height: 24, width: 64, borderRadius: 20, backgroundColor: G },
+});
+
+const SKELETON_DATA = [{ id: 's1' }, { id: 's2' }, { id: 's3' }, { id: 's4' }];
+
+const PAGE_SIZE = 10;
+
 export default function EventsScreen() {
   const navigation = useNavigation<any>();
 
+  const isFirstLoad = useRef(true);
+
   const [allEvents, setAllEvents] = useState<any[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const [filtering, setFiltering] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [citySheetOpen, setCitySheetOpen] = useState(false);
-
-  const PAGE_SIZE = 10;
 
   const [search, setSearch] = useState('');
   const [selectedCity, setSelectedCity] = useState<string | null>(null);
@@ -226,6 +359,15 @@ export default function EventsScreen() {
   const [pageLoading, setPageLoading] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const listData = initialLoad ? SKELETON_DATA : allEvents;
+  const renderItem = useCallback(
+    (item: any) => {
+      if (initialLoad) return <SkeletonCard />;
+      return <EventCard event={item} />;
+    },
+    [initialLoad],
+  );
 
   const searchBorderAnim = useRef(new Animated.Value(0)).current;
   const borderColor = searchBorderAnim.interpolate({
@@ -243,7 +385,8 @@ export default function EventsScreen() {
     }) => {
       if (opts.mode === 'paginate') setPageLoading(true);
       if (opts.mode === 'refresh') setRefreshing(true);
-      if (opts.mode === 'initial') setLoading(true);
+      if (opts.mode === 'initial' && isFirstLoad.current) setInitialLoad(true);
+      if (opts.mode === 'initial' && !isFirstLoad.current) setFiltering(true);
       try {
         const qs = new URLSearchParams();
         qs.set('from', new Date().toISOString());
@@ -268,7 +411,8 @@ export default function EventsScreen() {
       } catch (err) {
         console.log('EVENT FETCH ERROR', err);
       } finally {
-        setLoading(false);
+        setInitialLoad(false);
+        setFiltering(false);
         setPageLoading(false);
         setRefreshing(false);
       }
@@ -285,21 +429,20 @@ export default function EventsScreen() {
     }
   }, []);
 
-  const refetch = (
-    newSearch: string,
-    newCity: string | null,
-    newTagId: string | null,
-  ) => {
-    setOffset(0);
-    setHasMore(true);
-    fetchEvents({
-      mode: 'initial',
-      searchVal: newSearch,
-      city: newCity,
-      tagId: newTagId,
-      currentOffset: 0,
-    });
-  };
+  const refetch = useCallback(
+    (newSearch: string, newCity: string | null, newTagId: string | null) => {
+      setOffset(0);
+      setHasMore(true);
+      fetchEvents({
+        mode: 'initial',
+        searchVal: newSearch,
+        city: newCity,
+        tagId: newTagId,
+        currentOffset: 0,
+      });
+    },
+    [fetchEvents],
+  );
 
   useEffect(() => {
     fetchEvents({
@@ -312,17 +455,20 @@ export default function EventsScreen() {
     fetchTags();
   }, [fetchEvents, fetchTags]);
 
-  const handleSearchChange = (text: string) => {
-    setSearch(text);
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      refetch(
-        text,
-        selectedCity,
-        selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
-      );
-    }, 400);
-  };
+  const handleSearchChange = useCallback(
+    (text: string) => {
+      setSearch(text);
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+      debounceRef.current = setTimeout(() => {
+        refetch(
+          text,
+          selectedCity,
+          selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+        );
+      }, 400);
+    },
+    [refetch, selectedCity, selectedTagIds],
+  );
 
   const handleCitySelect = (city: string | null) => {
     setSelectedCity(city);
@@ -344,16 +490,16 @@ export default function EventsScreen() {
   const activeFilterCount =
     (search.trim() ? 1 : 0) + (selectedCity ? 1 : 0) + selectedTagIds.size;
 
-  const clearAll = () => {
+  const clearAll = useCallback(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     setSearch('');
     setSelectedCity(null);
     setSelectedTagIds(new Set());
     refetch('', null, null);
-  };
+  }, [debounceRef, refetch]);
 
   const loadMore = () => {
-    if (pageLoading || !hasMore || loading) return;
+    if (pageLoading || !hasMore || filtering) return;
     fetchEvents({
       mode: 'paginate',
       searchVal: search,
@@ -375,92 +521,115 @@ export default function EventsScreen() {
     });
   };
 
-  const ListHeader = (
-    <View>
-      <Animated.View style={[sb.wrap, { borderColor }]}>
-        <Ionicons name="search-outline" size={18} color="#8A7B6B" />
-        <TextInput
-          style={sb.input}
-          value={search}
-          onChangeText={handleSearchChange}
-          onSubmitEditing={() => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            refetch(
-              search,
-              selectedCity,
-              selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
-            );
-          }}
-          placeholder="Search events, places..."
-          placeholderTextColor="#C4BAB0"
-          onFocus={() =>
-            Animated.timing(searchBorderAnim, {
-              toValue: 1,
-              duration: 180,
-              useNativeDriver: false,
-            }).start()
-          }
-          onBlur={() =>
-            Animated.timing(searchBorderAnim, {
-              toValue: 0,
-              duration: 180,
-              useNativeDriver: false,
-            }).start()
-          }
-          returnKeyType="search"
-        />
-        {search.length > 0 && (
-          <TouchableOpacity
-            onPress={() => handleSearchChange('')}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <Ionicons name="close-circle" size={17} color="#C4BAB0" />
-          </TouchableOpacity>
-        )}
-      </Animated.View>
-
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterRow}
-        keyboardShouldPersistTaps="handled"
-      >
-        <CityTrigger
-          selectedCity={selectedCity}
-          onPress={() => setCitySheetOpen(true)}
-        />
-        {tags.map(tag => (
-          <TagPill
-            key={tag.id}
-            tag={tag}
-            selected={selectedTagIds.has(tag.id)}
-            onPress={() => toggleTag(tag.id)}
+  const ListHeader = useMemo(
+    () => (
+      <View>
+        <Animated.View style={[sb.wrap, { borderColor }]}>
+          <Ionicons name="search-outline" size={18} color="#8A7B6B" />
+          <TextInput
+            style={sb.input}
+            value={search}
+            onChangeText={handleSearchChange}
+            onSubmitEditing={() => {
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              refetch(
+                search,
+                selectedCity,
+                selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+              );
+            }}
+            placeholder="Search events, places..."
+            placeholderTextColor="#C4BAB0"
+            onFocus={() =>
+              Animated.timing(searchBorderAnim, {
+                toValue: 1,
+                duration: 180,
+                useNativeDriver: false,
+              }).start()
+            }
+            onBlur={() =>
+              Animated.timing(searchBorderAnim, {
+                toValue: 0,
+                duration: 180,
+                useNativeDriver: false,
+              }).start()
+            }
+            returnKeyType="search"
           />
-        ))}
-      </ScrollView>
+          {search.length > 0 && (
+            <TouchableOpacity
+              onPress={() => handleSearchChange('')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Ionicons name="close-circle" size={17} color="#C4BAB0" />
+            </TouchableOpacity>
+          )}
+        </Animated.View>
 
-      <View style={styles.resultRow}>
-        <AppText style={styles.resultCount}>
-          {allEvents.length} event{allEvents.length !== 1 ? 's' : ''}
-          {activeFilterCount > 0 ? ' found' : ' upcoming'}
-        </AppText>
-        {activeFilterCount > 0 && (
-          <TouchableOpacity
-            style={styles.clearBadge}
-            onPress={clearAll}
-            activeOpacity={0.8}
-          >
-            <AppText style={styles.clearBadgeText}>
-              {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
-            </AppText>
-            <Ionicons name="close-circle" size={14} color="#FF6B35" />
-          </TouchableOpacity>
-        )}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterRow}
+          keyboardShouldPersistTaps="handled"
+        >
+          <CityTrigger
+            selectedCity={selectedCity}
+            onPress={() => setCitySheetOpen(true)}
+          />
+          {tags.map(tag => (
+            <TagPill
+              key={tag.id}
+              tag={tag}
+              selected={selectedTagIds.has(tag.id)}
+              onPress={() => toggleTag(tag.id)}
+            />
+          ))}
+        </ScrollView>
+
+        <FilteringBar visible={filtering} />
+
+        <View style={styles.resultRow}>
+          <AppText style={styles.resultCount}>
+            {filtering
+              ? 'Searching...'
+              : `${allEvents.length}${hasMore ? '+' : ''} event${
+                  allEvents.length !== 1 ? 's' : ''
+                } ${activeFilterCount > 0 ? 'found' : 'upcoming'}`}
+          </AppText>
+
+          {activeFilterCount > 0 && (
+            <TouchableOpacity
+              style={styles.clearBadge}
+              onPress={clearAll}
+              activeOpacity={0.8}
+            >
+              <AppText style={styles.clearBadgeText}>
+                {activeFilterCount} filter{activeFilterCount > 1 ? 's' : ''}
+              </AppText>
+              <Ionicons name="close-circle" size={14} color="#FF6B35" />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
-    </View>
+    ),
+    [
+      borderColor,
+      search,
+      handleSearchChange,
+      selectedCity,
+      tags,
+      filtering,
+      allEvents.length,
+      hasMore,
+      activeFilterCount,
+      clearAll,
+      refetch,
+      selectedTagIds,
+      searchBorderAnim,
+    ],
   );
 
-  if (loading) {
+  if (filtering) {
     return (
       <View style={styles.loadingWrap}>
         <ActivityIndicator size="large" color="#FF6B35" />
@@ -487,7 +656,7 @@ export default function EventsScreen() {
       />
 
       <FlatList
-        data={allEvents}
+        data={listData}
         keyExtractor={item => item.id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
@@ -508,7 +677,7 @@ export default function EventsScreen() {
             onCreate={() => navigation.navigate('CreateEvent')}
           />
         }
-        renderItem={({ item }) => <EventCard event={item} />}
+        renderItem={({ item }) => renderItem(item)}
         onEndReached={loadMore}
         onEndReachedThreshold={0.4}
         ListFooterComponent={
@@ -516,7 +685,7 @@ export default function EventsScreen() {
             <ActivityIndicator
               color={Colors.light.primary}
               size="small"
-              style={{ paddingVertical: 20 }}
+              style={styles.listFooter}
             />
           ) : null
         }
@@ -609,5 +778,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 6,
+  },
+  listFooter: {
+    paddingVertical: Spacing.lg,
   },
 });
