@@ -214,46 +214,6 @@ const es = StyleSheet.create({
   },
 });
 
-function FilteringBar({ visible }: { visible: boolean }) {
-  const width = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    if (visible) {
-      width.setValue(0);
-      Animated.timing(width, {
-        toValue: 1,
-        duration: 1200,
-        useNativeDriver: false,
-      }).start();
-    }
-  }, [visible, width]);
-
-  if (!visible) return null;
-
-  return (
-    <View
-      style={{
-        height: 2,
-        backgroundColor: '#EDE8DF',
-        borderRadius: 1,
-        marginBottom: 4,
-      }}
-    >
-      <Animated.View
-        style={{
-          height: '100%',
-          width: width.interpolate({
-            inputRange: [0, 1],
-            outputRange: ['0%', '90%'],
-          }),
-          backgroundColor: '#FF6B35',
-          borderRadius: 1,
-        }}
-      />
-    </View>
-  );
-}
-
 function SkeletonCard() {
   const shimmer = useRef(new Animated.Value(0)).current;
 
@@ -301,7 +261,7 @@ function SkeletonCard() {
   );
 }
 
-const G = '#EDE8DF'; // skeleton grey
+const G = '#EDE8DF';
 const sk = StyleSheet.create({
   card: {
     backgroundColor: '#FFFDF8',
@@ -586,8 +546,6 @@ export default function EventsScreen() {
           ))}
         </ScrollView>
 
-        <FilteringBar visible={filtering} />
-
         <View style={styles.resultRow}>
           <AppText style={styles.resultCount}>
             {filtering
@@ -628,14 +586,6 @@ export default function EventsScreen() {
       searchBorderAnim,
     ],
   );
-
-  if (filtering) {
-    return (
-      <View style={styles.loadingWrap}>
-        <ActivityIndicator size="large" color="#FF6B35" />
-      </View>
-    );
-  }
 
   return (
     <Screen>
