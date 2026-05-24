@@ -29,11 +29,7 @@ import Colors from '../../constants/colors';
 import { Tag } from '../../constants/types';
 import CitySheet from '../../components/CitySheet';
 import PageHeader from '../../components/PageHeader';
-
-const TAG_COLORS = ['#FF6B35', '#E63946', '#2EC4B6', '#8338EC', '#FFBE0B'];
-function tagColor(id: string) {
-  return TAG_COLORS[id.charCodeAt(0) % TAG_COLORS.length];
-}
+import { tagColor } from '../../constants/values';
 
 const TagPill = memo(function TagPill({
   tag,
@@ -340,7 +336,7 @@ export default function EventsScreen() {
       mode: 'initial' | 'paginate' | 'refresh';
       searchVal: string;
       city: string | null;
-      tagId: string | null;
+      tagIds: string[] | null;
       currentOffset: number;
     }) => {
       if (opts.mode === 'paginate') setPageLoading(true);
@@ -354,7 +350,7 @@ export default function EventsScreen() {
         qs.set('offset', String(opts.currentOffset));
         if (opts.searchVal.trim()) qs.set('search', opts.searchVal.trim());
         if (opts.city) qs.set('city', opts.city);
-        if (opts.tagId) qs.set('tag_id', opts.tagId);
+        if (opts.tagIds) opts.tagIds.forEach(id => qs.append('tag_id', id));
 
         const res = await api.get('/events?' + qs.toString());
         const fetched: any[] = res.data.events ?? [];
@@ -390,14 +386,14 @@ export default function EventsScreen() {
   }, []);
 
   const refetch = useCallback(
-    (newSearch: string, newCity: string | null, newTagId: string | null) => {
+    (newSearch: string, newCity: string | null, newTagIds: string[] | null) => {
       setOffset(0);
       setHasMore(true);
       fetchEvents({
         mode: 'initial',
         searchVal: newSearch,
         city: newCity,
-        tagId: newTagId,
+        tagIds: newTagIds,
         currentOffset: 0,
       });
     },
@@ -409,7 +405,7 @@ export default function EventsScreen() {
       mode: 'initial',
       searchVal: '',
       city: null,
-      tagId: null,
+      tagIds: null,
       currentOffset: 0,
     });
     fetchTags();
@@ -423,7 +419,7 @@ export default function EventsScreen() {
         refetch(
           text,
           selectedCity,
-          selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+          selectedTagIds.size > 0 ? Array.from(selectedTagIds) : null,
         );
       }, 400);
     },
@@ -435,17 +431,22 @@ export default function EventsScreen() {
     refetch(
       search,
       city,
-      selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+      selectedTagIds.size > 0 ? Array.from(selectedTagIds) : null,
     );
   };
 
-  const toggleTag = (id: string) => {
-    setSelectedTagIds(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
-  };
+  const handleTagToggle = useCallback(
+    (id: string) => {
+      setSelectedTagIds(prev => {
+        const next = new Set(prev);
+        next.has(id) ? next.delete(id) : next.add(id);
+        const newTagIds = Array.from(next);
+        refetch(search, selectedCity, newTagIds);
+        return next;
+      });
+    },
+    [refetch, search, selectedCity],
+  );
 
   const activeFilterCount =
     (search.trim() ? 1 : 0) + (selectedCity ? 1 : 0) + selectedTagIds.size;
@@ -464,7 +465,7 @@ export default function EventsScreen() {
       mode: 'paginate',
       searchVal: search,
       city: selectedCity,
-      tagId: selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+      tagIds: selectedTagIds.size > 0 ? Array.from(selectedTagIds) : null,
       currentOffset: offset,
     });
   };
@@ -476,7 +477,7 @@ export default function EventsScreen() {
       mode: 'refresh',
       searchVal: search,
       city: selectedCity,
-      tagId: selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+      tagIds: selectedTagIds.size > 0 ? Array.from(selectedTagIds) : null,
       currentOffset: 0,
     });
   };
@@ -495,7 +496,7 @@ export default function EventsScreen() {
               refetch(
                 search,
                 selectedCity,
-                selectedTagIds.size > 0 ? Array.from(selectedTagIds)[0] : null,
+                selectedTagIds.size > 0 ? Array.from(selectedTagIds) : null,
               );
             }}
             placeholder="Search events, places..."
@@ -541,7 +542,7 @@ export default function EventsScreen() {
               key={tag.id}
               tag={tag}
               selected={selectedTagIds.has(tag.id)}
-              onPress={() => toggleTag(tag.id)}
+              onPress={() => handleTagToggle(tag.id)}
             />
           ))}
         </ScrollView>
@@ -584,6 +585,7 @@ export default function EventsScreen() {
       refetch,
       selectedTagIds,
       searchBorderAnim,
+      handleTagToggle,
     ],
   );
 

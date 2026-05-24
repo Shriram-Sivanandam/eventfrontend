@@ -3,13 +3,9 @@ import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import AppText from '../components/AppText';
 import api from '../api/client';
 import { Tag } from '../constants/types';
+import { tagColor } from '../constants/values';
 
 const MAX_TAGS = 3;
-
-const TAG_COLORS = ['#FF6B35', '#E63946', '#2EC4B6', '#8338EC', '#FFBE0B'];
-function tagColor(id: string) {
-  return TAG_COLORS[id.charCodeAt(0) % TAG_COLORS.length];
-}
 
 export default function TagPicker({
   selectedTagIds,

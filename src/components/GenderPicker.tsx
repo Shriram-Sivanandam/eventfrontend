@@ -10,20 +10,12 @@ import AppText from '../components/AppText';
 import { Radius, Spacing } from '../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Colors from '../constants/colors';
+import { GENDER_OPTIONS } from '../constants/values';
 
 const FOCUSED_BORDER = '#FF6B35';
 const UNFOCUSED_BORDER = '#EDE8DF';
 const FOCUSED_ICON_BG = '#FF6B3518';
 const UNFOCUSED_ICON_BG = '#F5F0E8';
-
-type GenderOption = { value: string; label: string; icon: string };
-
-const GENDER_OPTIONS: GenderOption[] = [
-  { value: 'male', label: 'Male', icon: '♂️' },
-  { value: 'female', label: 'Female', icon: '♀️' },
-  { value: 'non_binary', label: 'Non-binary', icon: '⚧️' },
-  { value: 'prefer_not_to_say', label: 'Prefer not to say', icon: '🔒' },
-];
 
 function genderLabel(value: string): string {
   return GENDER_OPTIONS.find(o => o.value === value)?.label ?? 'Select gender';
