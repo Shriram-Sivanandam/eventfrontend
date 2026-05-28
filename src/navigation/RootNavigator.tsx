@@ -1,13 +1,20 @@
-import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import React, { useRef } from 'react';
+import {
+  NavigationContainer,
+  NavigationContainerRef,
+} from '@react-navigation/native';
 import AuthStack from './AuthStack';
 import EventsStack from './EventsStack';
 import { useAuth } from '../context/AuthContext';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
+import { useNotifications } from '../hooks/useNotifications';
 
 export default function RootNavigator() {
+  const navigationRef = useRef<NavigationContainerRef<any>>(null);
   const { token, onboardingComplete, isLoading } = useAuth();
+
+  useNotifications(navigationRef, !!token);
 
   if (isLoading) {
     return (

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "26599770278",
+    "project_id": "spotlight-7da35",
+    "storage_bucket": "spotlight-7da35.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:26599770278:android:712ed112be4389f15f4c67",
+        "android_client_info": {
+          "package_name": "com.districtfrontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDD4KR-ZsJxNbDU-qugnQkSig0irYm9Mfs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
