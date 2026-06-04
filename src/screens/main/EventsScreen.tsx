@@ -598,12 +598,25 @@ export default function EventsScreen() {
         subtitle="Find events happening near you"
         backArrow={false}
         rightComponent={
-          <TouchableOpacity
-            onPress={() => navigation.navigate('ProfileScreen')}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="person-circle-outline" size={38} color="#FF6B35" />
-          </TouchableOpacity>
+          <View style={sb.rightComponent}>
+            <TouchableOpacity onPress={() => navigation.navigate('ChatList')}>
+              <Ionicons
+                name="chatbubbles-outline"
+                size={26}
+                color={Colors.light.primary}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('ProfileScreen')}
+              activeOpacity={0.85}
+            >
+              <Ionicons
+                name="person-circle-outline"
+                size={38}
+                color="#FF6B35"
+              />
+            </TouchableOpacity>
+          </View>
         }
       />
 
@@ -678,6 +691,11 @@ const sb = StyleSheet.create({
     fontSize: 14,
     color: Colors.light.primaryText,
     padding: 0,
+  },
+  rightComponent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
   },
 });
 

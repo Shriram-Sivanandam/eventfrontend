@@ -11,6 +11,8 @@ import EventDashboard from '../screens/profile/EventDashboard';
 import EditProfile from '../screens/profile/EditProfile';
 import RatingModal from '../components/RatingModal';
 import { useRatingPrompt } from '../hooks/RatingPrompt.ts';
+import EventChatScreen from '../screens/chat/EventChatScreen';
+import ChatListScreen from '../screens/chat/ChatListScreen.tsx';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,6 +32,8 @@ export default function EventsStack() {
         <Stack.Screen name="EventDashboard" component={EventDashboard} />
         <Stack.Screen name="RegisteredEvents" component={RegisteredEvents} />
         <Stack.Screen name="HelpAndSupport" component={HelpAndSupport} />
+        <Stack.Screen name="ChatList" component={ChatListScreen} />
+        <Stack.Screen name="EventChat" component={EventChatScreen} />
       </Stack.Navigator>
       {pendingEvent && (
         <RatingModal

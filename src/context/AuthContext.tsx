@@ -8,6 +8,7 @@ type AuthContextType = {
   onboardingComplete: boolean;
   setOnboardingComplete: (v: boolean) => void;
   isLoading: boolean;
+  user: any;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -16,12 +17,14 @@ const AuthContext = createContext<AuthContextType>({
   onboardingComplete: false,
   setOnboardingComplete: () => {},
   isLoading: true,
+  user: null,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setTokenState] = useState<string | null>(null);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     const bootstrap = async () => {
@@ -35,6 +38,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         api.defaults.headers.common.Authorization = `Bearer ${stored}`;
         const res = await api.get('/auth/me');
         setOnboardingComplete(res.data.onboarding_complete ?? false);
+        setUser(res.data);
       } catch {
         await AsyncStorage.removeItem('token');
         setTokenState(null);
@@ -64,6 +68,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         onboardingComplete,
         setOnboardingComplete,
         isLoading,
+        user,
       }}
     >
       {children}
