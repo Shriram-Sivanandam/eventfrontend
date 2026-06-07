@@ -15,6 +15,7 @@ import {
   signOut,
 } from '@react-native-firebase/auth';
 import api from '../api/client';
+import { REALTIME_DB_URL } from '../constants/firebase';
 
 export type ChatMessage = {
   id: string;
@@ -45,14 +46,10 @@ export function useEventChat(eventId: string) {
         const firebaseAuth = getAuth();
         await signInWithCustomToken(firebaseAuth, firebaseToken);
         signedInRef.current = true;
-        console.log('log 4 ', eventId);
 
         if (!isMounted) return;
 
-        const db = getDatabase(
-          undefined,
-          'https://spotlight-7da35-default-rtdb.asia-southeast1.firebasedatabase.app/',
-        );
+        const db = getDatabase(undefined, REALTIME_DB_URL);
         const chatRef = ref(db, `/chats/${eventId}`);
         const q = query(chatRef, orderByChild('created_at'), limitToLast(100));
         unsubRef.current = onValue(
@@ -110,7 +107,7 @@ export function useEventChat(eventId: string) {
       avatarUrl?: string,
     ) => {
       if (status !== 'ready') return;
-      const db = getDatabase();
+      const db = getDatabase(undefined, REALTIME_DB_URL);
       const chatRef = ref(db, `/chats/${eventId}`);
       await push(chatRef, {
         sender_id: senderId,

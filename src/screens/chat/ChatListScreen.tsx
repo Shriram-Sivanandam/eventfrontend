@@ -23,6 +23,7 @@ import { getAuth, signInWithCustomToken } from '@react-native-firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import { Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { REALTIME_DB_URL } from '../../constants/firebase';
 
 type ChatEvent = {
   id: string;
@@ -211,7 +212,7 @@ export default function ChatListScreen() {
       Object.values(unsubRefs.current).forEach(unsub => unsub());
       unsubRefs.current = {};
 
-      const db = getDatabase();
+      const db = getDatabase(undefined, REALTIME_DB_URL);
 
       events.forEach(event => {
         const q = query(
