@@ -9,6 +9,7 @@ import { useAuth } from '../context/AuthContext';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
 import { useNotifications } from '../hooks/useNotifications';
+import BootSplash from 'react-native-bootsplash';
 
 export default function RootNavigator() {
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
@@ -24,7 +25,11 @@ export default function RootNavigator() {
     );
   } else {
     return (
-      <NavigationContainer>
+      <NavigationContainer
+        onReady={() => {
+          BootSplash.hide({ fade: true });
+        }}
+      >
         {token ? (
           onboardingComplete ? (
             <EventsStack />
