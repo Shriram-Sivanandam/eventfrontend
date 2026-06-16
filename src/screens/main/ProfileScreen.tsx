@@ -142,7 +142,7 @@ export default function ProfileScreen() {
             >
               <AppText variant="body">Account Settings</AppText>
             </InfoRow>
-            <View style={styles.menuDivider} />
+            {/* <View style={styles.menuDivider} />
             <InfoRow
               icon="notifications-outline"
               accent="#FFBE0B"
@@ -150,19 +150,16 @@ export default function ProfileScreen() {
               rowStyle={styles.rowStyle}
             >
               <AppText variant="body">Notifications</AppText>
-            </InfoRow>
-            <View style={styles.menuDivider} />
+            </InfoRow> */}
+            {/* <View style={styles.menuDivider} />
             <InfoRow
               icon="shield-checkmark-outline"
               accent="#2EC4B6"
               rowStyle={styles.rowStyle}
             >
               <AppText variant="body">Privacy & Security</AppText>
-            </InfoRow>
-          </View>
-
-          <AppText style={styles.sectionLabel}>More</AppText>
-          <View style={styles.menuSection}>
+            </InfoRow> */}
+            <View style={styles.menuDivider} />
             <InfoRow
               icon="help-circle-outline"
               accent="#5C4F42"
