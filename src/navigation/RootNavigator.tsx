@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   NavigationContainer,
   NavigationContainerRef,
@@ -10,12 +10,38 @@ import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import OnboardingScreen from '../screens/auth/OnboardingScreen';
 import { useNotifications } from '../hooks/useNotifications';
 import BootSplash from 'react-native-bootsplash';
+import NotificationPermissionModal from '../components/NotificationPermissionModal';
+import { useNotificationPermission } from '../hooks/useNotificationPermission';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function RootNavigator() {
   const navigationRef = useRef<NavigationContainerRef<any>>(null);
   const { token, onboardingComplete, isLoading } = useAuth();
+  const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const { status, requestPermissionNow } = useNotificationPermission(!!token);
 
   useNotifications(navigationRef, !!token);
+
+  useEffect(() => {
+    if (!token || !onboardingComplete) return;
+    if (status !== 'denied') return;
+
+    const check = async () => {
+      const asked = await AsyncStorage.getItem('notification_permission_asked');
+      if (!asked) setShowPermissionModal(true);
+    };
+    check();
+  }, [token, onboardingComplete, status]);
+
+  const handleAllow = async () => {
+    setShowPermissionModal(false);
+    await requestPermissionNow();
+  };
+
+  const handleSkip = async () => {
+    setShowPermissionModal(false);
+    await AsyncStorage.setItem('notification_permission_asked', 'true');
+  };
 
   if (isLoading) {
     return (
@@ -25,21 +51,29 @@ export default function RootNavigator() {
     );
   } else {
     return (
-      <NavigationContainer
-        onReady={() => {
-          BootSplash.hide({ fade: true });
-        }}
-      >
-        {token ? (
-          onboardingComplete ? (
-            <EventsStack />
+      <>
+        <NavigationContainer
+          onReady={() => {
+            BootSplash.hide({ fade: true });
+          }}
+        >
+          {token ? (
+            onboardingComplete ? (
+              <EventsStack />
+            ) : (
+              <OnboardingScreen />
+            )
           ) : (
-            <OnboardingScreen />
-          )
-        ) : (
-          <AuthStack />
-        )}
-      </NavigationContainer>
+            <AuthStack />
+          )}
+        </NavigationContainer>
+
+        <NotificationPermissionModal
+          visible={showPermissionModal}
+          onAllow={handleAllow}
+          onSkip={handleSkip}
+        />
+      </>
     );
   }
 }

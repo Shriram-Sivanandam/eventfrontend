@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -18,6 +18,11 @@ import { useAuth } from '../../context/AuthContext';
 import { Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Colors from '../../constants/colors';
+import {
+  getNotificationPreferences,
+  setNotificationPreferences,
+} from '../../utils/NotificationPreferences';
+import { useNotificationPermission } from '../../hooks/useNotificationPermission';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -85,6 +90,31 @@ export default function AccountScreen() {
   const [notifReminders, setNotifReminders] = useState(true);
   const [deletingAccount, setDeletingAccount] = useState(false);
 
+  const { status: permStatus, openSettings } = useNotificationPermission(true);
+  const notificationsBlocked =
+    permStatus === 'blocked' || permStatus === 'denied';
+
+  useEffect(() => {
+    getNotificationPreferences().then(prefs => {
+      setNotifEvents(prefs.events);
+      setNotifChat(prefs.chat);
+      setNotifReminders(prefs.reminders);
+    });
+  }, []);
+
+  const handleToggleEvents = (val: boolean) => {
+    setNotifEvents(val);
+    setNotificationPreferences({ events: val });
+  };
+  const handleToggleChat = (val: boolean) => {
+    setNotifChat(val);
+    setNotificationPreferences({ chat: val });
+  };
+  const handleToggleReminders = (val: boolean) => {
+    setNotifReminders(val);
+    setNotificationPreferences({ reminders: val });
+  };
+
   const handleDeleteAccount = () => {
     Alert.alert(
       'Delete account',
@@ -150,6 +180,28 @@ export default function AccountScreen() {
         contentContainerStyle={styles.scrollContent}
       >
         <SectionLabel label="Notifications" />
+        {notificationsBlocked && (
+          <TouchableOpacity
+            style={styles.blockedBanner}
+            onPress={openSettings}
+            activeOpacity={0.8}
+          >
+            <Ionicons
+              name="notifications-off-outline"
+              size={16}
+              color="#E63946"
+            />
+            <View style={{ flex: 1 }}>
+              <AppText style={styles.blockedTitle}>
+                Notifications are disabled
+              </AppText>
+              <AppText style={styles.blockedSub}>
+                Tap to open Settings and enable them
+              </AppText>
+            </View>
+            <Ionicons name="chevron-forward" size={14} color="#E63946" />
+          </TouchableOpacity>
+        )}
         <Card>
           <SettingsRow
             icon="notifications-outline"
@@ -159,7 +211,7 @@ export default function AccountScreen() {
             rightElement={
               <Switch
                 value={notifEvents}
-                onValueChange={setNotifEvents}
+                onValueChange={handleToggleEvents}
                 trackColor={{ false: '#EDE8DF', true: '#FF6B35' }}
                 thumbColor="#fff"
               />
@@ -174,7 +226,7 @@ export default function AccountScreen() {
             rightElement={
               <Switch
                 value={notifChat}
-                onValueChange={setNotifChat}
+                onValueChange={handleToggleChat}
                 trackColor={{ false: '#EDE8DF', true: '#FF6B35' }}
                 thumbColor="#fff"
               />
@@ -189,7 +241,7 @@ export default function AccountScreen() {
             rightElement={
               <Switch
                 value={notifReminders}
-                onValueChange={setNotifReminders}
+                onValueChange={handleToggleReminders}
                 trackColor={{ false: '#EDE8DF', true: '#FF6B35' }}
                 thumbColor="#fff"
               />
@@ -458,4 +510,22 @@ const styles = StyleSheet.create({
     color: '#FF6B35',
     fontWeight: '600',
   },
+  blockedBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#E6394610',
+    borderWidth: 1.5,
+    borderColor: '#E6394630',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: Spacing.lg,
+  },
+  blockedTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#E63946',
+    marginBottom: 2,
+  },
+  blockedSub: { fontSize: 11, color: '#E6394690', fontWeight: '500' },
 });

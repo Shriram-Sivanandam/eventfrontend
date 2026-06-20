@@ -11,6 +11,10 @@ import {
 } from '@react-native-firebase/messaging';
 import api from '../api/client';
 import { useToast } from '../context/ToastContext';
+import {
+  getNotificationPreferences,
+  notificationTypeToPreference,
+} from '../utils/NotificationPreferences';
 
 const SCREEN_MAP: Record<string, string> = {
   EventDashboard: 'EventDashboard',
@@ -61,6 +65,14 @@ export function useNotifications(navigationRef: any, loggedIn: boolean) {
       unsubscribeForeground = onMessage(
         messagingInstance,
         async remoteMessage => {
+          const type = remoteMessage.data?.type as string;
+          const prefKey = notificationTypeToPreference(type);
+
+          if (prefKey) {
+            const prefs = await getNotificationPreferences();
+            if (!prefs[prefKey]) return;
+          }
+
           const title = remoteMessage.notification?.title ?? '';
           const body = remoteMessage.notification?.body ?? '';
           if (title || body) {
