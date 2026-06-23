@@ -24,6 +24,7 @@ import {
   RegistrantStatus,
 } from '../../constants/types';
 import RegistrantRow from '../../components/RegistrantRow';
+import RatingModal from '../../components/RatingModal';
 
 const IMAGE_BASE = 'http://10.0.2.2:8080';
 
@@ -87,6 +88,116 @@ const sc = StyleSheet.create({
   },
 });
 
+function RateRow({
+  reg,
+  onRate,
+  onViewProfile,
+}: {
+  reg: Registrant;
+  onRate: () => void;
+  onViewProfile: () => void;
+}) {
+  const name = reg.name || reg.email;
+  const initials = name
+    .split(' ')
+    .slice(0, 2)
+    .map((w: string) => w[0]?.toUpperCase())
+    .join('');
+  const AVATAR_COLORS = ['#FF6B35', '#E63946', '#2EC4B6', '#8338EC', '#FFBE0B'];
+  const color =
+    AVATAR_COLORS[(reg.user_id?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length];
+
+  return (
+    <TouchableOpacity
+      style={rr.row}
+      onPress={onViewProfile}
+      activeOpacity={0.8}
+    >
+      {reg.avatar_url ? (
+        <Image
+          source={{ uri: `${IMAGE_BASE}${reg.avatar_url}` }}
+          style={rr.avatar}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[rr.avatarPlaceholder, { backgroundColor: color }]}>
+          <AppText style={rr.avatarInitials}>{initials}</AppText>
+        </View>
+      )}
+
+      <View style={rr.info}>
+        <AppText style={rr.name} numberOfLines={1}>
+          {name}
+        </AppText>
+        <AppText style={rr.email} numberOfLines={1}>
+          {reg.email}
+        </AppText>
+      </View>
+
+      {reg.has_rated ? (
+        <View style={rr.ratedBadge}>
+          <Ionicons name="checkmark-circle" size={14} color="#2EC4B6" />
+          <AppText style={rr.ratedText}>Rated</AppText>
+        </View>
+      ) : (
+        <TouchableOpacity
+          style={rr.rateBtn}
+          onPress={e => {
+            e.stopPropagation();
+            onRate();
+          }}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="star-outline" size={13} color="#fff" />
+          <AppText style={rr.rateBtnText}>Rate</AppText>
+        </TouchableOpacity>
+      )}
+    </TouchableOpacity>
+  );
+}
+
+const rr = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: Spacing.md,
+    paddingVertical: 12,
+  },
+  avatar: { width: 42, height: 42, borderRadius: 21 },
+  avatarPlaceholder: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarInitials: { fontSize: 15, fontWeight: '800', color: '#fff' },
+  info: { flex: 1, minWidth: 0 },
+  name: { fontSize: 14, fontWeight: '700', color: Colors.light.primaryText },
+  email: { fontSize: 12, color: Colors.light.secondaryText, marginTop: 1 },
+  rateBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: '#FFBE0B',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 20,
+  },
+  rateBtnText: { fontSize: 12, fontWeight: '800', color: '#fff' },
+  ratedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#2EC4B615',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 20,
+  },
+  ratedText: { fontSize: 11, fontWeight: '700', color: '#2EC4B6' },
+});
+
 export default function EventDashboard() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
@@ -97,11 +208,13 @@ export default function EventDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [filterTab, setFilterTab] = useState<FilterTab>('all');
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [ratingTarget, setRatingTarget] = useState<Registrant | null>(null);
 
   const fetchDashboard = useCallback(
     async (isRefresh = false) => {
       if (isRefresh) setRefreshing(true);
       try {
+        console.log(' asdf asd ', id);
         const res = await api.get(`/events/${id}/dashboard`);
         setDashboard(res.data);
       } catch (err) {
@@ -170,6 +283,22 @@ export default function EventDashboard() {
     );
   };
 
+  const handleRatingSubmitted = () => {
+    if (!ratingTarget) return;
+    setDashboard(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        registrants: prev.registrants.map(r =>
+          r.registration_id === ratingTarget.registration_id
+            ? { ...r, has_rated: true }
+            : r,
+        ),
+      };
+    });
+    setRatingTarget(null);
+  };
+
   if (loading || !dashboard) {
     return (
       <View style={s.loadingWrap}>
@@ -187,6 +316,9 @@ export default function EventDashboard() {
     event.city,
     event.pincode,
   ].filter(Boolean);
+
+  const acceptedRegistrants = registrants.filter(r => r.status === 'accepted');
+  const ratedCount = acceptedRegistrants.filter(r => r.has_rated).length;
 
   const FILTER_TABS: {
     key: FilterTab;
@@ -373,92 +505,147 @@ export default function EventDashboard() {
               )}
             </View>
 
-            <AppText style={s.secLabel}>
-              Registrants ({registrants.length})
-            </AppText>
-
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ marginBottom: Spacing.sm }}
-            >
-              {FILTER_TABS.map(ft => (
-                <TouchableOpacity
-                  key={ft.key}
-                  style={[
-                    s.ftTab,
-                    filterTab === ft.key && {
-                      backgroundColor: ft.color + '18',
-                      borderColor: ft.color,
-                    },
-                  ]}
-                  onPress={() => setFilterTab(ft.key)}
-                  activeOpacity={0.8}
-                >
-                  <AppText
-                    style={[
-                      s.ftText,
-                      filterTab === ft.key && {
-                        color: ft.color,
-                        fontWeight: '800',
-                      },
-                    ]}
-                  >
-                    {ft.label}
-                  </AppText>
-                  <View
-                    style={[
-                      s.ftBadge,
-                      {
-                        backgroundColor:
-                          filterTab === ft.key ? ft.color : '#EDE8DF',
-                      },
-                    ]}
-                  >
-                    <AppText
-                      style={[
-                        s.ftBadgeText,
-                        filterTab === ft.key && { color: '#fff' },
-                      ]}
-                    >
-                      {ft.count}
-                    </AppText>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            <View style={s.card}>
-              {filtered.length === 0 ? (
-                <View style={s.emptyWrap}>
-                  <AppText style={s.emptyTxt}>
-                    No {filterTab === 'all' ? '' : filterTab} registrations
-                  </AppText>
+            {isPast ? (
+              <>
+                <AppText style={s.secLabel}>
+                  Rate Attendees ({ratedCount}/{acceptedRegistrants.length}{' '}
+                  rated)
+                </AppText>
+                <View style={s.card}>
+                  {acceptedRegistrants.length === 0 ? (
+                    <View style={s.emptyWrap}>
+                      <AppText style={s.emptyTxt}>
+                        No accepted attendees for this event
+                      </AppText>
+                    </View>
+                  ) : (
+                    acceptedRegistrants.map((reg, i) => (
+                      <React.Fragment key={reg.registration_id}>
+                        <RateRow
+                          reg={reg}
+                          onRate={() => setRatingTarget(reg)}
+                          onViewProfile={() =>
+                            navigation.navigate('HostProfile', {
+                              hostId: reg.user_id,
+                              profileType: 'user',
+                            })
+                          }
+                        />
+                        {i < acceptedRegistrants.length - 1 && (
+                          <View style={s.divider} />
+                        )}
+                      </React.Fragment>
+                    ))
+                  )}
                 </View>
-              ) : (
-                filtered.map((reg, i) => (
-                  <React.Fragment key={reg.registration_id}>
-                    <RegistrantRow
-                      reg={reg}
-                      updating={updatingId === reg.registration_id}
-                      onAccept={() => confirmUpdate(reg, 'accepted')}
-                      onReject={() => confirmUpdate(reg, 'rejected')}
-                      onPending={() => confirmUpdate(reg, 'pending')}
-                      onViewProfile={() =>
-                        navigation.navigate('HostProfile', {
-                          hostId: reg.user_id,
-                          profileType: 'user',
-                        })
-                      }
-                    />
-                    {i < filtered.length - 1 && <View style={s.divider} />}
-                  </React.Fragment>
-                ))
-              )}
-            </View>
+              </>
+            ) : (
+              <>
+                <AppText style={s.secLabel}>
+                  Registrants ({registrants.length})
+                </AppText>
+
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginBottom: Spacing.sm }}
+                >
+                  {FILTER_TABS.map(ft => (
+                    <TouchableOpacity
+                      key={ft.key}
+                      style={[
+                        s.ftTab,
+                        filterTab === ft.key && {
+                          backgroundColor: ft.color + '18',
+                          borderColor: ft.color,
+                        },
+                      ]}
+                      onPress={() => setFilterTab(ft.key)}
+                      activeOpacity={0.8}
+                    >
+                      <AppText
+                        style={[
+                          s.ftText,
+                          filterTab === ft.key && {
+                            color: ft.color,
+                            fontWeight: '800',
+                          },
+                        ]}
+                      >
+                        {ft.label}
+                      </AppText>
+                      <View
+                        style={[
+                          s.ftBadge,
+                          {
+                            backgroundColor:
+                              filterTab === ft.key ? ft.color : '#EDE8DF',
+                          },
+                        ]}
+                      >
+                        <AppText
+                          style={[
+                            s.ftBadgeText,
+                            filterTab === ft.key && { color: '#fff' },
+                          ]}
+                        >
+                          {ft.count}
+                        </AppText>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+
+                <View style={s.card}>
+                  {filtered.length === 0 ? (
+                    <View style={s.emptyWrap}>
+                      <AppText style={s.emptyTxt}>
+                        No {filterTab === 'all' ? '' : filterTab} registrations
+                      </AppText>
+                    </View>
+                  ) : (
+                    filtered.map((reg, i) => (
+                      <React.Fragment key={reg.registration_id}>
+                        <RegistrantRow
+                          reg={reg}
+                          updating={updatingId === reg.registration_id}
+                          onAccept={() => confirmUpdate(reg, 'accepted')}
+                          onReject={() => confirmUpdate(reg, 'rejected')}
+                          onPending={() => confirmUpdate(reg, 'pending')}
+                          onViewProfile={() =>
+                            navigation.navigate('HostProfile', {
+                              hostId: reg.user_id,
+                              profileType: 'user',
+                            })
+                          }
+                        />
+                        {i < filtered.length - 1 && <View style={s.divider} />}
+                      </React.Fragment>
+                    ))
+                  )}
+                </View>
+              </>
+            )}
           </View>
         </ScrollView>
       </Screen>
+
+      {ratingTarget && (
+        <RatingModal
+          visible={!!ratingTarget}
+          event={{
+            id: event.id,
+            title: event.title,
+            host_user_id: event.host_user_id,
+          }}
+          rateeId={ratingTarget.user_id}
+          rateeName={ratingTarget.name || ratingTarget.email}
+          rateeAvatar={ratingTarget.avatar_url}
+          ratingType="attendee"
+          onClose={() => setRatingTarget(null)}
+          onSubmitted={handleRatingSubmitted}
+        />
+      )}
     </View>
   );
 }

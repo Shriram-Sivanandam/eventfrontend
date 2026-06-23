@@ -15,8 +15,7 @@ import {
 import AppText from './AppText';
 import api from '../api/client';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Radius, Shadows, Spacing } from '../constants/layout';
-import Colors from '../constants/colors';
+import { Spacing } from '../constants/layout';
 
 const IMAGE_BASE = 'http://10.0.2.2:8080';
 
@@ -52,8 +51,15 @@ type Props = {
   onClose: () => void;
   onSubmitted?: () => void;
   event: RatingEvent;
+  // Optional overrides — when omitted, defaults to rating the host (original behaviour).
+  // Pass these when a host is rating an attendee instead.
+  rateeId?: string;
+  rateeName?: string;
+  rateeAvatar?: string;
+  ratingType?: 'host' | 'attendee';
 };
 
+// ── Star row ───────────────────────────────────────────────────────────────────
 function StarRow({
   score,
   onPress,
@@ -108,11 +114,12 @@ const sr = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'center',
-    gap: Spacing.sm,
-    marginBottom: Spacing.sm,
+    gap: 6,
+    marginBottom: 4,
   },
 });
 
+// ── Host avatar ────────────────────────────────────────────────────────────────
 function HostAvatar({
   name,
   avatarUrl,
@@ -140,27 +147,34 @@ function HostAvatar({
 }
 
 const ha = StyleSheet.create({
-  img: { width: 44, height: 44, borderRadius: Radius.pill },
+  img: { width: 44, height: 44, borderRadius: 22 },
   placeholder: {
     width: 44,
     height: 44,
-    borderRadius: Radius.pill,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  initials: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: Colors.light.tertiaryText,
-  },
+  initials: { fontSize: 16, fontWeight: '900', color: '#fff' },
 });
 
+// ── Main component ─────────────────────────────────────────────────────────────
 export default function RatingModal({
   visible,
   onClose,
   onSubmitted,
   event,
+  rateeId,
+  rateeName,
+  rateeAvatar,
+  ratingType,
 }: Props) {
+  // Resolve who's being rated — defaults to the host if no override given
+  const resolvedRateeId = rateeId ?? event.host_user_id;
+  const resolvedRateeName = rateeName ?? event.host_name;
+  const resolvedRateeAvatar = rateeAvatar ?? event.host_avatar;
+  const resolvedType = ratingType ?? 'host';
+
   const [score, setScore] = useState(0);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
   const [comment, setComment] = useState('');
@@ -207,8 +221,8 @@ export default function RatingModal({
     setSubmitting(true);
     try {
       await api.post(`/events/${event.id}/rate`, {
-        ratee_id: event.host_user_id,
-        rating_type: 'host',
+        ratee_id: resolvedRateeId,
+        rating_type: resolvedType,
         score,
         comment: comment.trim() || null,
         tags: Array.from(selectedTags),
@@ -258,41 +272,49 @@ export default function RatingModal({
             <ScrollView
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 8 }}
             >
+              {/* Header */}
               <View style={styles.header}>
-                <AppText style={styles.sheetTitle}>Rate this event</AppText>
+                <AppText style={styles.sheetTitle}>
+                  {resolvedType === 'host'
+                    ? 'Rate this event'
+                    : `Rate ${resolvedRateeName || 'attendee'}`}
+                </AppText>
                 <TouchableOpacity
                   onPress={close}
                   hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                 >
-                  <Ionicons
-                    name="close"
-                    size={22}
-                    color={Colors.light.secondaryText}
-                  />
+                  <Ionicons name="close" size={22} color="#C4BAB0" />
                 </TouchableOpacity>
               </View>
 
-              <AppText style={styles.eventTitle} numberOfLines={1}>
+              {/* Event title */}
+              <AppText style={styles.eventTitle} numberOfLines={2}>
                 {event.title}
               </AppText>
 
+              {/* Ratee card — shows the host when rating a host, or the attendee when rating an attendee */}
               <View style={styles.hostCard}>
                 <HostAvatar
-                  name={event.host_name}
-                  avatarUrl={event.host_avatar}
-                  hostId={event.host_user_id}
+                  name={resolvedRateeName}
+                  avatarUrl={resolvedRateeAvatar}
+                  hostId={resolvedRateeId}
                 />
                 <View>
-                  <AppText style={styles.hostLabel}>Hosted by</AppText>
+                  <AppText style={styles.hostLabel}>
+                    {resolvedType === 'host' ? 'Hosted by' : 'Rating'}
+                  </AppText>
                   <AppText style={styles.hostName}>
-                    {event.host_name || 'Anonymous'}
+                    {resolvedRateeName || 'Anonymous'}
                   </AppText>
                 </View>
               </View>
 
+              {/* Stars */}
               <StarRow score={score} onPress={setScore} />
 
+              {/* Score label */}
               <View style={styles.scoreLabelWrap}>
                 {label ? (
                   <AppText style={[styles.scoreLabel, { color: label.color }]}>
@@ -305,7 +327,8 @@ export default function RatingModal({
                 )}
               </View>
 
-              {score > -1 && (
+              {/* Tags — only shown after a score is set */}
+              {score > 0 && (
                 <View style={styles.tagsSection}>
                   <AppText style={styles.tagsLabel}>
                     What stood out?{' '}
@@ -337,14 +360,15 @@ export default function RatingModal({
                 </View>
               )}
 
-              {score > -1 && (
+              {/* Comment */}
+              {score > 0 && (
                 <View style={styles.commentWrap}>
                   <TextInput
                     style={styles.commentInput}
                     value={comment}
                     onChangeText={setComment}
                     placeholder="Add a comment (optional)..."
-                    placeholderTextColor={Colors.light.secondaryText}
+                    placeholderTextColor="#C4BAB0"
                     multiline
                     maxLength={280}
                   />
@@ -354,6 +378,7 @@ export default function RatingModal({
                 </View>
               )}
 
+              {/* Submit */}
               <TouchableOpacity
                 style={[styles.submitBtn, score === 0 && styles.submitBtnOff]}
                 onPress={submit}
@@ -376,6 +401,7 @@ export default function RatingModal({
               </TouchableOpacity>
             </ScrollView>
           ) : (
+            /* Success */
             <Animated.View
               style={[
                 styles.successWrap,
@@ -408,161 +434,140 @@ export default function RatingModal({
 const styles = StyleSheet.create({
   kav: { flex: 1, justifyContent: 'flex-end' },
   backdrop: {
-    ...StyleSheet.absoluteFill,
-    backgroundColor: 'rgba(26,10,0,0.25)',
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(26,10,0,0.45)',
   },
   sheet: {
-    backgroundColor: Colors.light.surface,
-    borderTopLeftRadius: Radius.md,
-    borderTopRightRadius: Radius.md,
+    backgroundColor: '#FFFDF8',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.md,
-    paddingBottom: Spacing.xxl,
-    maxHeight: '90%',
+    paddingTop: 12,
+    paddingBottom: 32,
+    maxHeight: '92%',
   },
   handle: {
     width: 40,
     height: 4,
-    borderRadius: Radius.pill,
-    backgroundColor: Colors.light.border,
+    borderRadius: 2,
+    backgroundColor: '#EDE8DF',
     alignSelf: 'center',
-    marginBottom: Spacing.md,
+    marginBottom: 16,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: Spacing.sm,
+    marginBottom: 8,
   },
   sheetTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: Colors.light.primaryText,
+    color: '#1A0A00',
+    letterSpacing: -0.3,
   },
   eventTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: Colors.light.secondaryText,
-    marginBottom: Spacing.md,
+    color: '#5C4F42',
+    marginBottom: 14,
+    lineHeight: 20,
   },
   hostCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: Spacing.md,
-    backgroundColor: Colors.light.secondarySurface,
-    borderRadius: Radius.md,
-    padding: Spacing.md,
-    marginBottom: Spacing.xl,
+    gap: 12,
+    backgroundColor: '#FAF7F2',
+    borderRadius: 14,
+    padding: 14,
+    marginBottom: 24,
   },
   hostLabel: {
     fontSize: 10,
     fontWeight: '700',
-    color: Colors.light.secondaryText,
+    color: '#C4BAB0',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
-  hostName: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: Colors.light.primaryText,
-  },
+  hostName: { fontSize: 15, fontWeight: '800', color: '#1A0A00' },
   scoreLabelWrap: {
     height: 30,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: Spacing.sm,
-    marginBottom: Spacing.xl,
+    marginTop: 8,
+    marginBottom: 20,
   },
   scoreLabel: { fontSize: 18, fontWeight: '900', letterSpacing: -0.3 },
-  scorePlaceholder: {
-    fontSize: 13,
-    color: Colors.light.secondaryText,
-    fontWeight: '500',
-  },
-  tagsSection: { marginBottom: Spacing.md },
+  scorePlaceholder: { fontSize: 13, color: '#C4BAB0', fontWeight: '500' },
+  tagsSection: { marginBottom: 16 },
   tagsLabel: {
     fontSize: 12,
     fontWeight: '700',
-    color: Colors.light.secondaryText,
-    marginBottom: Spacing.md,
+    color: '#8A7B6B',
+    marginBottom: 10,
   },
-  tagsOptional: { fontWeight: '400', color: Colors.light.secondaryText },
+  tagsOptional: { fontWeight: '400', color: '#C4BAB0' },
   tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: {
     paddingHorizontal: 12,
     paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: Colors.light.border,
-    backgroundColor: Colors.light.secondarySurface,
+    borderColor: '#EDE8DF',
+    backgroundColor: '#FFFDF8',
   },
-  tagSelected: {
-    backgroundColor: Colors.light.primary,
-    borderColor: Colors.light.primary,
-  },
-  tagText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: Colors.light.primaryText,
-  },
-  tagTextSelected: { color: Colors.light.tertiaryText, fontWeight: '700' },
+  tagSelected: { backgroundColor: '#FF6B35', borderColor: '#FF6B35' },
+  tagText: { fontSize: 12, fontWeight: '600', color: '#5C4F42' },
+  tagTextSelected: { color: '#fff', fontWeight: '700' },
   commentWrap: {
-    backgroundColor: Colors.light.secondarySurface,
-    borderRadius: Radius.md,
+    backgroundColor: '#FAF7F2',
+    borderRadius: 14,
     borderWidth: 1.5,
-    borderColor: Colors.light.border,
-    padding: Spacing.md,
-    marginBottom: Spacing.lg,
+    borderColor: '#EDE8DF',
+    padding: 12,
+    marginBottom: 20,
   },
   commentInput: {
     fontSize: 14,
     fontWeight: '500',
-    color: Colors.light.primaryText,
+    color: '#1A0A00',
     minHeight: 72,
     textAlignVertical: 'top',
     padding: 0,
   },
   charCount: {
     fontSize: 10,
-    color: Colors.light.secondaryText,
+    color: '#C4BAB0',
     textAlign: 'right',
-    marginTop: Spacing.sm,
+    marginTop: 4,
   },
   submitBtn: {
-    backgroundColor: Colors.light.primary,
-    borderRadius: Radius.md,
-    paddingVertical: Spacing.md,
+    backgroundColor: '#FF6B35',
+    borderRadius: 14,
+    paddingVertical: 16,
     alignItems: 'center',
-    marginBottom: Spacing.md,
-    ...Shadows.card,
+    marginBottom: 10,
+    shadowColor: '#FF6B35',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    elevation: 4,
   },
-  submitBtnOff: {
-    backgroundColor: Colors.light.border,
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  submitBtnText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: Colors.light.tertiaryText,
-  },
+  submitBtnOff: { backgroundColor: '#EDE8DF', shadowOpacity: 0, elevation: 0 },
+  submitBtnText: { fontSize: 15, fontWeight: '800', color: '#fff' },
   skipBtn: { alignItems: 'center', paddingVertical: 8 },
-  skipText: {
-    fontSize: 13,
-    color: Colors.light.secondaryText,
-    fontWeight: '500',
-  },
+  skipText: { fontSize: 13, color: '#C4BAB0', fontWeight: '500' },
   successWrap: { alignItems: 'center', paddingVertical: 52 },
-  successEmoji: { fontSize: 56, marginBottom: Spacing.xl },
+  successEmoji: { fontSize: 56, marginBottom: 16 },
   successTitle: {
     fontSize: 22,
     fontWeight: '900',
-    color: Colors.light.primaryText,
-    marginBottom: Spacing.md,
+    color: '#1A0A00',
+    marginBottom: 8,
   },
   successSub: {
     fontSize: 14,
-    color: Colors.light.primary,
+    color: '#8A7B6B',
     textAlign: 'center',
     lineHeight: 20,
   },

@@ -18,6 +18,7 @@ export type ErrorState = Partial<Record<keyof FormState, string>>;
 
 export type Event = {
   id: string;
+  host_user_id: string;
   title: string;
   description?: string;
   location?: string;
@@ -47,6 +48,7 @@ export type Registrant = {
   avatar_url?: string;
   status: RegistrantStatus;
   registered_at: string;
+  has_rated?: boolean;
 };
 
 export type Dashboard = {
