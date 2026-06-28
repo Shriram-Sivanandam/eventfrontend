@@ -220,6 +220,7 @@ export default function RatingModal({
     if (score === 0 || submitting) return;
     setSubmitting(true);
     try {
+      console.log('Submitting rating', resolvedRateeId);
       await api.post(`/events/${event.id}/rate`, {
         ratee_id: resolvedRateeId,
         rating_type: resolvedType,

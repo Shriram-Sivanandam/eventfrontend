@@ -58,22 +58,29 @@ export default function EditProfileScreen() {
     setForm(prev => ({ ...prev, [key]: val }));
 
   useEffect(() => {
-    api
-      .get('/auth/me')
-      .then(res => {
-        const u = res.data;
-        setForm({
-          name: u.name || '',
-          email: u.email || '',
-          phone: u.phone || '',
-          bio: u.bio || '',
-          city: u.city || '',
-          age: u.age != null ? String(u.age) : '',
-        });
-        setGender(u.gender || '');
-        if (u.avatar_url) setAvatarURL(`${IMAGE_BASE}${u.avatar_url}`);
-      })
-      .finally(() => setLoading(false));
+    try {
+      api
+        .get('/auth/me')
+        .then(res => {
+          const u = res.data;
+          var age =
+            new Date().getFullYear() - new Date(u.date_of_birth).getFullYear();
+          setForm({
+            name: u.name || '',
+            email: u.email || '',
+            phone: u.phone || '',
+            bio: u.bio || '',
+            city: u.city || '',
+            age: age != null ? String(age) : '',
+          });
+          setGender(u.gender || '');
+          if (u.avatar_url) setAvatarURL(`${IMAGE_BASE}${u.avatar_url}`);
+        })
+        .finally(() => setLoading(false));
+    } catch (err) {
+      console.log('FETCH PROFILE ERROR', err);
+      setLoading(false);
+    }
   }, []);
 
   const pickAvatar = () => {

@@ -214,7 +214,6 @@ export default function EventDashboard() {
     async (isRefresh = false) => {
       if (isRefresh) setRefreshing(true);
       try {
-        console.log(' asdf asd ', id);
         const res = await api.get(`/events/${id}/dashboard`);
         setDashboard(res.data);
       } catch (err) {
@@ -523,7 +522,9 @@ export default function EventDashboard() {
                       <React.Fragment key={reg.registration_id}>
                         <RateRow
                           reg={reg}
-                          onRate={() => setRatingTarget(reg)}
+                          onRate={() => {
+                            setRatingTarget(reg);
+                          }}
                           onViewProfile={() =>
                             navigation.navigate('HostProfile', {
                               hostId: reg.user_id,

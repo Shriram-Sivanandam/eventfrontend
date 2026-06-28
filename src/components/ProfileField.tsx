@@ -1,5 +1,5 @@
-import React, { useRef } from 'react';
-import { View, StyleSheet, TextInput } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { View, StyleSheet, TextInput, Pressable } from 'react-native';
 import AppText from './AppText';
 import { Radius, Spacing } from '../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -33,6 +33,17 @@ export default function Field({
 }) {
   const containerRef = useRef<View>(null);
   const iconWrapRef = useRef<View>(null);
+  const inputRef = useRef<TextInput>(null);
+  const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  const handleChangeText = (text: string) => {
+    setLocalValue(text);
+    onChange(text);
+  };
 
   const handleFocus = () => {
     containerRef.current?.setNativeProps({
@@ -52,43 +63,57 @@ export default function Field({
     });
   };
 
+  const focusInput = () => {
+    if (editable) inputRef.current?.focus();
+  };
+
   return (
-    <View
-      ref={containerRef}
+    <Pressable
+      onPress={focusInput}
       style={[field.wrap, !editable && field.wrapDisabled]}
     >
-      <View ref={iconWrapRef} style={field.iconWrap}>
-        <Ionicons name={icon} size={17} color="#8A7B6B" />
+      <View ref={containerRef} style={field.borderWrap}>
+        <View ref={iconWrapRef} style={field.iconWrap}>
+          <Ionicons name={icon} size={17} color="#8A7B6B" />
+        </View>
+
+        <View style={field.textCol}>
+          <AppText style={field.label}>
+            {label}
+            {optional && <AppText style={field.optional}> · optional</AppText>}
+          </AppText>
+          <TextInput
+            ref={inputRef}
+            style={[
+              field.input,
+              multiline && field.inputMulti,
+              !editable && field.inputDisabled,
+            ]}
+            value={localValue}
+            onChangeText={handleChangeText}
+            placeholder={placeholder}
+            placeholderTextColor="#C4BAB0"
+            multiline={multiline}
+            keyboardType={keyboardType}
+            editable={editable}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            scrollEnabled={false}
+          />
+        </View>
       </View>
-      <View>
-        <AppText style={field.label}>
-          {label}
-          {optional && <AppText style={field.optional}> · optional</AppText>}
-        </AppText>
-        <TextInput
-          style={[
-            field.input,
-            multiline && field.inputMulti,
-            !editable && field.inputDisabled,
-          ]}
-          value={value}
-          onChangeText={onChange}
-          placeholder={placeholder}
-          placeholderTextColor="#C4BAB0"
-          multiline={multiline}
-          keyboardType={keyboardType}
-          editable={editable}
-          onFocus={handleFocus} // no setState — safe on Android
-          onBlur={handleBlur}
-          scrollEnabled={false}
-        />
-      </View>
-    </View>
+    </Pressable>
   );
 }
 
 const field = StyleSheet.create({
   wrap: {
+    marginBottom: Spacing.md,
+  },
+  wrapDisabled: {
+    opacity: 1,
+  },
+  borderWrap: {
     flexDirection: 'row',
     backgroundColor: Colors.light.tertiarySurface,
     borderRadius: Radius.md,
@@ -96,10 +121,6 @@ const field = StyleSheet.create({
     borderColor: UNFOCUSED_BORDER,
     padding: Spacing.md,
     gap: Spacing.md,
-    marginBottom: Spacing.md,
-  },
-  wrapDisabled: {
-    backgroundColor: '#FAF7F2',
   },
   iconWrap: {
     width: 36,
@@ -108,6 +129,11 @@ const field = StyleSheet.create({
     backgroundColor: UNFOCUSED_ICON_BG,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
+  },
+  textCol: {
+    flex: 1,
+    minWidth: 0,
   },
   label: {
     fontSize: 10,
@@ -128,6 +154,7 @@ const field = StyleSheet.create({
     fontWeight: '600',
     color: '#1A0A00',
     padding: 0,
+    width: '100%',
   },
   inputMulti: {
     minHeight: 70,

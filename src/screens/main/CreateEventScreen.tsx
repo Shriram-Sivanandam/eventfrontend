@@ -261,8 +261,8 @@ export default function CreateEventScreen() {
         <SuccessOverlay
           visible={showSuccess}
           emoji="🎟️"
-          title="You're in!"
-          subtitle={`See you at the event!!!`}
+          title="Event Created"
+          subtitle={`Your event "${form.title}" has been successfully created.`}
           onDone={() => {
             setShowSuccess(false);
             navigation.goBack();

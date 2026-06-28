@@ -408,7 +408,7 @@ export default function OnboardingScreen() {
   return (
     <Screen>
       <PageHeader
-        title="Profile"
+        title="Onboarding"
         onPressBack={goBack}
         rightComponent={
           <View>

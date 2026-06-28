@@ -239,27 +239,12 @@ export default function RegisteredEventCard({
                     <Ionicons
                       name="close-circle-outline"
                       size={13}
-                      color="#E63946"
+                      color={Colors.light.danger}
                     />
                     <AppText style={card.leaveBtnText}>Cancel</AppText>
                   </TouchableOpacity>
                 )}
               </View>
-
-              {!isPast && (
-                <TouchableOpacity
-                  style={card.leaveBtn}
-                  onPress={onLeave}
-                  activeOpacity={0.7}
-                >
-                  <Ionicons
-                    name="close-circle-outline"
-                    size={13}
-                    color={Colors.light.danger}
-                  />
-                  <AppText style={card.leaveBtnText}>Cancel</AppText>
-                </TouchableOpacity>
-              )}
             </View>
           )}
         </View>
