@@ -62,6 +62,7 @@ export type Dashboard = {
 
 export type PastEvent = {
   id: string;
+  host_user_id: string;
   title: string;
   location?: string;
   city?: string;

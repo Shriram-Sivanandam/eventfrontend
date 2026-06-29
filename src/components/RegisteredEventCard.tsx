@@ -112,7 +112,7 @@ export default function RegisteredEventCard({
   isBottomRow?: boolean;
   onPress: () => void;
   onLeave?: () => void;
-  onRate: () => void;
+  onRate?: () => void;
 }) {
   const { time, fullDate } = formatDate(event.event_start);
   const accent = getAccent(event.title);

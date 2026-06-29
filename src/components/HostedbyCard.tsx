@@ -26,7 +26,7 @@ function getInitials(name?: string): string {
 
 const AVATAR_COLORS = ['#FF6B35', '#E63946', '#2EC4B6', '#8338EC', '#FFBE0B'];
 function avatarColor(id: string) {
-  return AVATAR_COLORS[id.charCodeAt(0) % AVATAR_COLORS.length];
+  return AVATAR_COLORS[id?.charCodeAt(0) % AVATAR_COLORS.length];
 }
 
 function StarRating({ score }: { score: number }) {
