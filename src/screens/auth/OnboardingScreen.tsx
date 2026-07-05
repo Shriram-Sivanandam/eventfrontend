@@ -21,6 +21,7 @@ import Screen from '../../components/Screen';
 import PageHeader from '../../components/PageHeader.tsx';
 import CitySheet from '../../components/CitySheet.tsx';
 import { GENDER_OPTIONS } from '../../constants/values';
+import { useToast } from '../../context/ToastContext.tsx';
 
 const STEPS = [
   { id: 'welcome', title: null },
@@ -70,6 +71,7 @@ const pd = StyleSheet.create({
 
 export default function OnboardingScreen() {
   const { setOnboardingComplete } = useAuth() as any;
+  const { showToast } = useToast();
 
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -199,8 +201,11 @@ export default function OnboardingScreen() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setOnboardingComplete(true);
-    } catch (err: any) {
-      console.log('ONBOARDING ERROR', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong while onboarding',
+      });
     } finally {
       setSaving(false);
     }

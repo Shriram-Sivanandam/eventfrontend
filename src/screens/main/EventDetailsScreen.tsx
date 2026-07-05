@@ -71,8 +71,13 @@ export default function EventDetailsScreen() {
     api
       .get(`/events/${route.params.event.id}`)
       .then(res => setEvent(res.data))
-      .catch(err => console.log('EVENT DETAIL ERROR', err));
-  }, [route.params.event.id]);
+      .catch(() =>
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while fetching event details',
+        }),
+      );
+  }, [route.params.event.id, showToast]);
 
   const openMaps = () => {
     if (event.maps_link) {
@@ -84,10 +89,13 @@ export default function EventDetailsScreen() {
     try {
       setLoading(true);
       await api.post(`/events/${event.id}/join`);
-      showToast({ type: 'success', message: 'Done!' });
+      showToast({ type: 'success', message: 'Registration request sent!' });
       setJoined(true);
-    } catch (err) {
-      console.log('JOIN ERROR', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong while joining the event',
+      });
     } finally {
       setLoading(false);
     }

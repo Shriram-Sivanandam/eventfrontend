@@ -18,6 +18,7 @@ import Screen from '../../components/Screen';
 import Colors from '../../constants/colors';
 import HostEventCard from '../../components/HostEventCard';
 import { Event } from '../../constants/types';
+import { useToast } from '../../context/ToastContext';
 
 type Tab = 'upcoming' | 'past';
 
@@ -116,27 +117,34 @@ function AddEventBtn() {
 
 export default function MyEventsScreen() {
   const navigation = useNavigation<any>();
+  const { showToast } = useToast();
 
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<Tab>('upcoming');
 
-  const fetchEvents = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    try {
-      const meRes = await api.get('/auth/me');
-      const uid = meRes.data.id;
+  const fetchEvents = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) setRefreshing(true);
+      try {
+        const meRes = await api.get('/auth/me');
+        const uid = meRes.data.id;
 
-      const eventsRes = await api.get(`/events?host_user_id=${uid}&limit=50`);
-      setEvents(eventsRes.data.events ?? []);
-    } catch (err) {
-      console.log('MY EVENTS ERROR', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+        const eventsRes = await api.get(`/events?host_user_id=${uid}&limit=50`);
+        setEvents(eventsRes.data.events ?? []);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while fetching events.',
+        });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [showToast],
+  );
 
   useEffect(() => {
     fetchEvents();
@@ -159,8 +167,11 @@ export default function MyEventsScreen() {
             try {
               await api.delete(`/events/${event.id}`);
               setEvents(prev => prev.filter(e => e.id !== event.id));
-            } catch (err) {
-              console.log('DELETE ERROR', err);
+            } catch {
+              showToast({
+                type: 'error',
+                message: 'Something went wrong while deleting this event.',
+              });
             }
           },
         },

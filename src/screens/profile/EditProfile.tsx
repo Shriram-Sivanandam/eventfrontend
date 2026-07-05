@@ -23,6 +23,7 @@ import Screen from '../../components/Screen';
 import Colors from '../../constants/colors';
 import Field from '../../components/ProfileField';
 import GenderPicker from '../../components/GenderPicker';
+import { useToast } from '../../context/ToastContext';
 
 function getInitials(name: string, email: string): string {
   const src = name || email || '?';
@@ -36,6 +37,7 @@ function getInitials(name: string, email: string): string {
 export default function EditProfileScreen() {
   const navigation = useNavigation<any>();
   const saveAnim = useRef(new Animated.Value(1)).current;
+  const { showToast } = useToast();
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -75,11 +77,14 @@ export default function EditProfileScreen() {
           if (u.avatar_url) setAvatarURL(u.avatar_url);
         })
         .finally(() => setLoading(false));
-    } catch (err) {
-      console.log('FETCH PROFILE ERROR', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong while fetching profile.',
+      });
       setLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   const pickAvatar = () => {
     Alert.alert('Profile Photo', 'Choose a source', [
@@ -157,9 +162,11 @@ export default function EditProfileScreen() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       navigation.goBack();
-    } catch (err: any) {
-      console.log('SAVE PROFILE ERROR', err);
-      Alert.alert('Error', 'Failed to save profile. Please try again.');
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Failed to save profile. Please try again later.',
+      });
     } finally {
       setSaving(false);
     }

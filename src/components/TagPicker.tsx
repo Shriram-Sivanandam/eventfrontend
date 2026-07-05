@@ -4,6 +4,7 @@ import AppText from '../components/AppText';
 import api from '../api/client';
 import { Tag } from '../constants/types';
 import { tagColor } from '../constants/values';
+import { useToast } from '../context/ToastContext';
 
 const MAX_TAGS = 3;
 
@@ -16,14 +17,20 @@ export default function TagPicker({
 }) {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     api
       .get('/tags')
       .then(res => setTags(res.data.tags ?? []))
-      .catch(err => console.log('TAGS FETCH ERROR', err))
+      .catch(() =>
+        showToast({
+          type: 'error',
+          message: 'Something went wrong in fetching tags',
+        }),
+      )
       .finally(() => setLoading(false));
-  }, []);
+  }, [showToast]);
 
   const toggle = (id: string) => {
     const isSelected = selectedTagIds.includes(id);

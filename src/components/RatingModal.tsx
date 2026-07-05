@@ -16,6 +16,7 @@ import AppText from './AppText';
 import api from '../api/client';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Spacing } from '../constants/layout';
+import { useToast } from '../context/ToastContext';
 
 const RATING_TAGS = [
   'Great vibe',
@@ -169,6 +170,7 @@ export default function RatingModal({
   const resolvedRateeName = rateeName ?? event.host_name;
   const resolvedRateeAvatar = rateeAvatar ?? event.host_avatar;
   const resolvedType = ratingType ?? 'host';
+  const { showToast } = useToast();
 
   const [score, setScore] = useState(0);
   const [selectedTags, setSelectedTags] = useState<Set<string>>(new Set());
@@ -233,8 +235,11 @@ export default function RatingModal({
         onSubmitted?.();
         close();
       }, 1600);
-    } catch (err) {
-      console.log('RATING SUBMIT ERROR', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong in submitting your rating',
+      });
     } finally {
       setSubmitting(false);
     }

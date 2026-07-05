@@ -23,6 +23,7 @@ import {
   setNotificationPreferences,
 } from '../../utils/NotificationPreferences';
 import { useNotificationPermission } from '../../hooks/useNotificationPermission';
+import { useToast } from '../../context/ToastContext';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
@@ -84,6 +85,7 @@ function Card({ children }: { children: React.ReactNode }) {
 export default function AccountScreen() {
   const navigation = useNavigation<any>();
   const { setToken, setOnboardingComplete } = useAuth() as any;
+  const { showToast } = useToast();
 
   const [notifEvents, setNotifEvents] = useState(true);
   const [notifChat, setNotifChat] = useState(true);
@@ -148,12 +150,11 @@ export default function AccountScreen() {
       await AsyncStorage.clear();
       setToken(null);
       setOnboardingComplete(false);
-    } catch (err) {
-      Alert.alert(
-        'Something went wrong',
-        'Could not delete your account. Please try again later.',
-      );
-      console.log('DELETE ACCOUNT ERROR', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Could not delete your account. Please try again later',
+      });
     } finally {
       setDeletingAccount(false);
     }

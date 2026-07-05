@@ -17,6 +17,7 @@ import RegisteredEventCard from '../../components/RegisteredEventCard';
 import Colors from '../../constants/colors';
 import Screen from '../../components/Screen';
 import PageHeader from '../../components/PageHeader';
+import { useToast } from '../../context/ToastContext';
 
 function getInitials(name?: string, email?: string) {
   const src = name || email || '?';
@@ -146,6 +147,7 @@ export default function HostProfileScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const { hostId, profileType } = route.params;
+  const { showToast } = useToast();
 
   const [profile, setProfile] = useState<HostProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -157,14 +159,17 @@ export default function HostProfileScreen() {
       try {
         const res = await api.get(`/users/${hostId}/profile`);
         setProfile(res.data);
-      } catch (err) {
-        console.log('HOST PROFILE ERROR', err);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while fetching profile',
+        });
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [hostId],
+    [hostId, showToast],
   );
 
   useEffect(() => {

@@ -24,6 +24,7 @@ import { useNavigation } from '@react-navigation/native';
 import { Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { REALTIME_DB_URL } from '../../constants/firebase';
+import { useToast } from '../../context/ToastContext';
 
 type ChatEvent = {
   id: string;
@@ -169,6 +170,7 @@ const cr = StyleSheet.create({
 
 export default function ChatListScreen() {
   const navigation = useNavigation<any>();
+  const { showToast } = useToast();
 
   const [events, setEvents] = useState<ChatEvent[]>([]);
   const [loading, setLoading] = useState(true);
@@ -179,18 +181,24 @@ export default function ChatListScreen() {
 
   const unsubRefs = React.useRef<Record<string, () => void>>({});
 
-  const fetchEvents = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    try {
-      const res = await api.get('/chats');
-      setEvents(res.data.chats ?? []);
-    } catch (err) {
-      console.log('CHAT LIST ERROR', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const fetchEvents = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) setRefreshing(true);
+      try {
+        const res = await api.get('/chats');
+        setEvents(res.data.chats ?? []);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while fetching chats',
+        });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [showToast],
+  );
 
   useEffect(() => {
     fetchEvents();
@@ -204,8 +212,11 @@ export default function ChatListScreen() {
         const res = await api.post(`/events/${events[0].id}/chat/token`);
         const firebaseAuth = getAuth();
         await signInWithCustomToken(firebaseAuth, res.data.token);
-      } catch (err) {
-        console.log('CHAT LIST FIREBASE AUTH ERROR', err);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while authenticating',
+        });
         return;
       }
 
@@ -234,7 +245,7 @@ export default function ChatListScreen() {
     return () => {
       Object.values(unsubRefs.current).forEach(unsub => unsub());
     };
-  }, [events]);
+  }, [events, showToast]);
 
   const sortedEvents = [...events].sort((a, b) => {
     const aTs =

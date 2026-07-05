@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import api from '../api/client';
+import { useToast } from '../context/ToastContext';
 
 export type UnratedEvent = {
   id: string;
@@ -13,6 +14,7 @@ export type UnratedEvent = {
 export function useRatingPrompt() {
   const [queue, setQueue] = useState<UnratedEvent[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
+  const { showToast } = useToast();
 
   const pendingEvent: UnratedEvent | null = queue[currentIdx] ?? null;
 
@@ -22,24 +24,30 @@ export function useRatingPrompt() {
         const res = await api.get('/events/unrated');
         setQueue(res.data.events ?? []);
         setCurrentIdx(0);
-      } catch (err) {
-        console.log('useRatingPrompt error:', err);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong in fetching unrated events',
+        });
       }
     }, 1500);
     return () => clearTimeout(t);
-  }, []);
+  }, [showToast]);
 
   const dismiss = useCallback(async () => {
     const ev = queue[currentIdx];
     if (!ev) return;
     try {
       await api.post(`/events/${ev.id}/dismiss-rating-prompt`);
-    } catch (err) {
-      console.log('dismiss prompt error:', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong while dismissing the rating prompt',
+      });
     } finally {
       setCurrentIdx(i => i + 1);
     }
-  }, [queue, currentIdx]);
+  }, [queue, currentIdx, showToast]);
 
   const onSubmitted = useCallback(() => {
     setCurrentIdx(i => i + 1);

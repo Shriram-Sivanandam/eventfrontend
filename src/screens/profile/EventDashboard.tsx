@@ -25,6 +25,7 @@ import {
 } from '../../constants/types';
 import RegistrantRow from '../../components/RegistrantRow';
 import RatingModal from '../../components/RatingModal';
+import { useToast } from '../../context/ToastContext';
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -200,6 +201,7 @@ export default function EventDashboard() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
   const id = route.params.id;
+  const { showToast } = useToast();
 
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [loading, setLoading] = useState(false);
@@ -214,14 +216,17 @@ export default function EventDashboard() {
       try {
         const res = await api.get(`/events/${id}/dashboard`);
         setDashboard(res.data);
-      } catch (err) {
-        console.log('DASHBOARD ERROR', err);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while fetching dashboard.',
+        });
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [id],
+    [id, showToast],
   );
 
   useEffect(() => {
@@ -251,9 +256,11 @@ export default function EventDashboard() {
           total_registered: accepted + pending,
         };
       });
-    } catch (err) {
-      console.log(err);
-      Alert.alert('Error', 'Failed to update registration.');
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Failed to update registration.',
+      });
     } finally {
       setUpdatingId(null);
     }

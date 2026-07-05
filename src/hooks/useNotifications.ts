@@ -25,14 +25,34 @@ const SCREEN_MAP: Record<string, string> = {
 export function useNotifications(navigationRef: any, loggedIn: boolean) {
   const { showToast } = useToast();
 
-  const registerToken = useCallback(async (messagingInstance: any) => {
-    try {
-      const token = await getToken(messagingInstance);
-      await saveToken(token);
-    } catch (err) {
-      console.log('Failed to get FCM token:', err);
-    }
-  }, []);
+  const saveToken = useCallback(
+    async (token: string) => {
+      try {
+        await api.post('/auth/fcm-token', { token });
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while saving token',
+        });
+      }
+    },
+    [showToast],
+  );
+
+  const registerToken = useCallback(
+    async (messagingInstance: any) => {
+      try {
+        const token = await getToken(messagingInstance);
+        await saveToken(token);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while getting token',
+        });
+      }
+    },
+    [saveToken, showToast],
+  );
 
   useEffect(() => {
     if (!loggedIn) return;
@@ -49,7 +69,6 @@ export function useNotifications(navigationRef: any, loggedIn: boolean) {
         status === AuthorizationStatus.PROVISIONAL;
 
       if (!allowed) {
-        console.log('Notification permission denied');
         return;
       }
 
@@ -102,15 +121,7 @@ export function useNotifications(navigationRef: any, loggedIn: boolean) {
       unsubscribeTokenRefresh?.();
       unsubscribeForeground?.();
     };
-  }, [loggedIn, navigationRef, registerToken, showToast]);
-
-  const saveToken = async (token: string) => {
-    try {
-      await api.post('/auth/fcm-token', { token });
-    } catch (err) {
-      console.log('Failed to save FCM token:', err);
-    }
-  };
+  }, [loggedIn, navigationRef, registerToken, saveToken, showToast]);
 }
 
 function handleNotificationTap(data: any, navigationRef: any) {

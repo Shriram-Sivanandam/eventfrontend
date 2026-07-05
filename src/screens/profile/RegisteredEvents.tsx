@@ -19,6 +19,7 @@ import Colors from '../../constants/colors';
 import RegisteredEventCard from '../../components/RegisteredEventCard';
 import { Event } from '../../constants/types';
 import RatingModal from '../../components/RatingModal';
+import { useToast } from '../../context/ToastContext';
 
 type Tab = 'upcoming' | 'past';
 
@@ -103,6 +104,7 @@ const empty = StyleSheet.create({
 
 export default function RegisteredEventsScreen() {
   const navigation = useNavigation<any>();
+  const { showToast } = useToast();
 
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -110,18 +112,24 @@ export default function RegisteredEventsScreen() {
   const [tab, setTab] = useState<Tab>('upcoming');
   const [ratingEvent, setRatingEvent] = useState<Event | null>(null);
 
-  const fetchEvents = useCallback(async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    try {
-      const res = await api.get('/events/registered');
-      setEvents(res.data.events ?? []);
-    } catch (err) {
-      console.log('REGISTERED EVENTS ERROR', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
+  const fetchEvents = useCallback(
+    async (isRefresh = false) => {
+      if (isRefresh) setRefreshing(true);
+      try {
+        const res = await api.get('/events/registered');
+        setEvents(res.data.events ?? []);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while fetching events.',
+        });
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [showToast],
+  );
 
   useEffect(() => {
     fetchEvents();
@@ -144,8 +152,12 @@ export default function RegisteredEventsScreen() {
             try {
               await api.delete(`/events/${event.id}/leave`);
               setEvents(prev => prev.filter(e => e.id !== event.id));
-            } catch (err) {
-              console.log('LEAVE ERROR', err);
+            } catch {
+              showToast({
+                type: 'error',
+                message:
+                  'Something went wrong while cancelling your registration.',
+              });
             }
           },
         },

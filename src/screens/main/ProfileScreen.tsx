@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   StyleSheet,
@@ -17,6 +17,7 @@ import { Radius, Shadows, Spacing } from '../../constants/layout';
 import { useNavigation } from '@react-navigation/native';
 import InfoRow from '../../components/InfoRow';
 import PageHeader from '../../components/PageHeader';
+import { useToast } from '../../context/ToastContext';
 
 function getInitials(name: string, email: string): string {
   const source = name || email || '?';
@@ -30,6 +31,7 @@ function getInitials(name: string, email: string): string {
 export default function ProfileScreen() {
   const { setToken } = useAuth();
   const navigation = useNavigation<any>();
+  const { showToast } = useToast();
 
   const [user, setUser] = useState<any>(null);
   const [eventCount, setEventCount] = useState<number>(0);
@@ -39,21 +41,24 @@ export default function ProfileScreen() {
     setToken(null);
   };
 
-  const loadProfile = async () => {
+  const loadProfile = useCallback(async () => {
     try {
       const res = await api.get('/auth/me');
       setUser(res.data);
 
       const eventsRes = await api.get('/events?host_user_id=' + res.data.id);
       setEventCount(eventsRes.data.count ?? eventsRes.data.events?.length ?? 0);
-    } catch (err) {
-      console.log('PROFILE ERROR', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong while fetching profile',
+      });
     }
-  };
+  }, [showToast]);
 
   useEffect(() => {
     loadProfile();
-  }, []);
+  }, [loadProfile]);
 
   const initials = user ? getInitials(user.name, user.email) : '';
   const displayName = user?.name || user?.email?.split('@')[0] || '';

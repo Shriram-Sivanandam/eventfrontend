@@ -16,6 +16,7 @@ import {
 } from '@react-native-firebase/auth';
 import api from '../api/client';
 import { REALTIME_DB_URL } from '../constants/firebase';
+import { useToast } from '../context/ToastContext';
 
 export type ChatMessage = {
   id: string;
@@ -31,6 +32,7 @@ type Status = 'connecting' | 'ready' | 'error' | 'kicked';
 export function useEventChat(eventId: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [status, setStatus] = useState<Status>('connecting');
+  const { showToast } = useToast();
 
   const unsubRef = useRef<(() => void) | null>(null);
   const signedInRef = useRef(false);
@@ -73,7 +75,10 @@ export function useEventChat(eventId: string) {
             setStatus('ready');
           },
           (error: any) => {
-            console.log('CHAT LISTENER ERROR', error);
+            showToast({
+              type: 'error',
+              message: 'Something went wrong while fetching chat messages',
+            });
             if (error?.code === 'database/permission-denied') {
               setStatus('kicked');
             } else {
@@ -81,8 +86,11 @@ export function useEventChat(eventId: string) {
             }
           },
         );
-      } catch (err: any) {
-        console.log('CHAT INIT ERROR', err);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while initializing chat',
+        });
         setStatus('error');
       }
     };
@@ -97,7 +105,7 @@ export function useEventChat(eventId: string) {
         signOut(firebaseAuth).catch(() => {});
       }
     };
-  }, [eventId]);
+  }, [eventId, showToast]);
 
   const sendMessage = useCallback(
     async (

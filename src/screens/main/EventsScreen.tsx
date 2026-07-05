@@ -30,6 +30,7 @@ import { Tag } from '../../constants/types';
 import CitySheet from '../../components/CitySheet';
 import PageHeader from '../../components/PageHeader';
 import { tagColor } from '../../constants/values';
+import { useToast } from '../../context/ToastContext';
 
 const TagPill = memo(function TagPill({
   tag,
@@ -297,6 +298,7 @@ const PAGE_SIZE = 10;
 
 export default function EventsScreen() {
   const navigation = useNavigation<any>();
+  const { showToast } = useToast();
 
   const isFirstLoad = useRef(true);
 
@@ -364,8 +366,11 @@ export default function EventsScreen() {
 
         setHasMore(more);
         setOffset(opts.currentOffset + fetched.length);
-      } catch (err) {
-        console.log('EVENT FETCH ERROR', err);
+      } catch {
+        showToast({
+          type: 'error',
+          message: 'Something went wrong while fetching events',
+        });
       } finally {
         setInitialLoad(false);
         setFiltering(false);
@@ -373,17 +378,20 @@ export default function EventsScreen() {
         setRefreshing(false);
       }
     },
-    [],
+    [showToast],
   );
 
   const fetchTags = useCallback(async () => {
     try {
       const res = await api.get('/tags');
       setTags(res.data.tags ?? []);
-    } catch (err) {
-      console.log('TAGS FETCH ERROR', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong while fetching tags',
+      });
     }
-  }, []);
+  }, [showToast]);
 
   const refetch = useCallback(
     (newSearch: string, newCity: string | null, newTagIds: string[] | null) => {

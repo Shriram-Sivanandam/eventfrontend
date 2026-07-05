@@ -23,6 +23,7 @@ import Page3 from '../createEvent/Page3';
 import FormStepBar from '../../components/FormStepBar';
 import PageHeader from '../../components/PageHeader';
 import SuccessOverlay from '../../components/SuccessOverlay';
+import { useToast } from '../../context/ToastContext';
 
 const TOTAL_STEPS = 3;
 
@@ -33,6 +34,7 @@ export default function CreateEventScreen() {
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const slideAnimation = useRef(new Animated.Value(0)).current;
+  const { showToast } = useToast();
 
   const [form, setForm] = useState<FormState>({
     title: '',
@@ -196,8 +198,11 @@ export default function CreateEventScreen() {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
       setShowSuccess(true);
-    } catch (err: any) {
-      console.log('SERVER ERROR:', err);
+    } catch {
+      showToast({
+        type: 'error',
+        message: 'Something went wrong while creating the event',
+      });
     }
   };
 
