@@ -5,8 +5,6 @@ import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Spacing } from '../constants/layout';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 type Props = {
   hostUserId: string;
   hostName?: string;
@@ -57,7 +55,7 @@ export default function HostedByCard({
   totalHosted,
 }: Props) {
   const navigation = useNavigation<any>();
-  const avatarUri = hostAvatarUrl ? `${IMAGE_BASE}${hostAvatarUrl}` : null;
+  const avatarUri = hostAvatarUrl ? hostAvatarUrl : null;
 
   return (
     <TouchableOpacity

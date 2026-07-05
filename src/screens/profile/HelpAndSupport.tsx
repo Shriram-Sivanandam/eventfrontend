@@ -158,7 +158,7 @@ export default function HelpSupportScreen() {
           <InfoRow
             icon="document-text-outline"
             accent="#8338EC"
-            onPress={() => Linking.openURL('https://yourapp.com/terms')}
+            onPress={() => Linking.openURL('https://spotlightinfo.in/terms')}
           >
             <AppText variant="body" fontWeight="bold" style={styles.label}>
               Terms of Service
@@ -171,7 +171,7 @@ export default function HelpSupportScreen() {
           <InfoRow
             icon="shield-outline"
             accent="#8338EC"
-            onPress={() => Linking.openURL('https://yourapp.com/privacy')}
+            onPress={() => Linking.openURL('https://spotlightinfo.in/privacy')}
           >
             <AppText variant="body" fontWeight="bold" style={styles.label}>
               Privacy Policy

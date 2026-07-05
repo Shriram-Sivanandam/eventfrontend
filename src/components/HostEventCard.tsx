@@ -6,8 +6,6 @@ import Colors from '../constants/colors';
 import AppText from './AppText';
 import { Event } from '../constants/types';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 function formatEventDate(isoString: string) {
   const d = new Date(isoString);
   const day = d.getDate();
@@ -48,7 +46,7 @@ export default function HostEventCard({
       <View style={card.imageWrap}>
         {event.image_url ? (
           <Image
-            source={{ uri: `${IMAGE_BASE}${event.image_url}` }}
+            source={{ uri: event.image_url }}
             style={card.image}
             resizeMode="cover"
           />

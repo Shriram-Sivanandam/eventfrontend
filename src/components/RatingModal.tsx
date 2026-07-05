@@ -17,8 +17,6 @@ import api from '../api/client';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Spacing } from '../constants/layout';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 const RATING_TAGS = [
   'Great vibe',
   'Well organized',
@@ -51,15 +49,12 @@ type Props = {
   onClose: () => void;
   onSubmitted?: () => void;
   event: RatingEvent;
-  // Optional overrides — when omitted, defaults to rating the host (original behaviour).
-  // Pass these when a host is rating an attendee instead.
   rateeId?: string;
   rateeName?: string;
   rateeAvatar?: string;
   ratingType?: 'host' | 'attendee';
 };
 
-// ── Star row ───────────────────────────────────────────────────────────────────
 function StarRow({
   score,
   onPress,
@@ -131,7 +126,7 @@ function HostAvatar({
 }) {
   const COLORS = ['#FF6B35', '#E63946', '#2EC4B6', '#8338EC', '#FFBE0B'];
   const color = COLORS[hostId.charCodeAt(0) % COLORS.length];
-  const uri = avatarUrl ? `${IMAGE_BASE}${avatarUrl}` : null;
+  const uri = avatarUrl ? avatarUrl : null;
   const init = (name || '?')
     .split(' ')
     .slice(0, 2)
@@ -220,7 +215,6 @@ export default function RatingModal({
     if (score === 0 || submitting) return;
     setSubmitting(true);
     try {
-      console.log('Submitting rating', resolvedRateeId);
       await api.post(`/events/${event.id}/rate`, {
         ratee_id: resolvedRateeId,
         rating_type: resolvedType,

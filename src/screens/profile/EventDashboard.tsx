@@ -26,8 +26,6 @@ import {
 import RegistrantRow from '../../components/RegistrantRow';
 import RatingModal from '../../components/RatingModal';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 function formatDate(iso: string) {
   const d = new Date(iso);
   return {
@@ -115,7 +113,7 @@ function RateRow({
     >
       {reg.avatar_url ? (
         <Image
-          source={{ uri: `${IMAGE_BASE}${reg.avatar_url}` }}
+          source={{ uri: reg.avatar_url }}
           style={rr.avatar}
           resizeMode="cover"
         />
@@ -341,7 +339,7 @@ export default function EventDashboard() {
       <View style={s.heroWrap}>
         {event.image_url ? (
           <Image
-            source={{ uri: `${IMAGE_BASE}${event.image_url}` }}
+            source={{ uri: event.image_url }}
             style={s.heroImg}
             resizeMode="cover"
           />

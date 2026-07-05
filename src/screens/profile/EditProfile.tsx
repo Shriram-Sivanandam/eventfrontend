@@ -24,8 +24,6 @@ import Colors from '../../constants/colors';
 import Field from '../../components/ProfileField';
 import GenderPicker from '../../components/GenderPicker';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 function getInitials(name: string, email: string): string {
   const src = name || email || '?';
   return src
@@ -74,7 +72,7 @@ export default function EditProfileScreen() {
             age: age != null ? String(age) : '',
           });
           setGender(u.gender || '');
-          if (u.avatar_url) setAvatarURL(`${IMAGE_BASE}${u.avatar_url}`);
+          if (u.avatar_url) setAvatarURL(u.avatar_url);
         })
         .finally(() => setLoading(false));
     } catch (err) {

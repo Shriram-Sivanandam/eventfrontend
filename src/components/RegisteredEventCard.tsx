@@ -6,8 +6,6 @@ import Colors from '../constants/colors';
 import { Radius, Shadows, Spacing } from '../constants/layout';
 import { Event } from '../constants/types';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 function formatDate(iso: string) {
   const d = new Date(iso);
   return {
@@ -129,7 +127,7 @@ export default function RegisteredEventCard({
           <View style={card.thumbWrap}>
             {event.image_url ? (
               <Image
-                source={{ uri: `${IMAGE_BASE}${event.image_url}` }}
+                source={{ uri: event.image_url }}
                 style={card.thumb}
                 resizeMode="cover"
               />

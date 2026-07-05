@@ -18,8 +18,6 @@ import Colors from '../../constants/colors';
 import Screen from '../../components/Screen';
 import PageHeader from '../../components/PageHeader';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 function getInitials(name?: string, email?: string) {
   const src = name || email || '?';
   return src
@@ -184,9 +182,7 @@ export default function HostProfileScreen() {
     );
   }
 
-  const avatarUri = profile.avatar_url
-    ? `${IMAGE_BASE}${profile.avatar_url}`
-    : null;
+  const avatarUri = profile.avatar_url ? profile.avatar_url : null;
   const initials = getInitials(profile.name, profile.email);
   const color = avatarColor(profile.user_id);
   const displayName = profile.name || profile.email.split('@')[0];

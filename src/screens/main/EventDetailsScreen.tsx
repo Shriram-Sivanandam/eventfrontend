@@ -67,8 +67,6 @@ export default function EventDetailsScreen() {
   const [loading, setLoading] = useState(false);
   const [joined, setJoined] = useState(event.joined);
 
-  const IMAGE_BASE = 'http://10.0.2.2:8080';
-
   useEffect(() => {
     api
       .get(`/events/${route.params.event.id}`)
@@ -100,7 +98,7 @@ export default function EventDetailsScreen() {
       <View style={styles.heroWrap}>
         {event.image_url ? (
           <Image
-            source={{ uri: `${IMAGE_BASE}${event.image_url}` }}
+            source={{ uri: event.image_url }}
             style={styles.heroImage}
             resizeMode="cover"
           />

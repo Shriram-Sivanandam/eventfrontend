@@ -6,8 +6,6 @@ import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Colors from '../constants/colors';
 
-const IMAGE_BASE = 'http://10.0.2.2:8080';
-
 const ACCENTS = ['#FF6B35', '#E63946', '#2EC4B6', '#FFBE0B', '#8338EC'];
 function accentFor(title: string) {
   return ACCENTS[(title?.charCodeAt(0) ?? 0) % ACCENTS.length];
@@ -65,7 +63,7 @@ export default function EventCard({ event }: any) {
         <View style={styles.imageWrap}>
           {event.image_url ? (
             <Image
-              source={{ uri: `${IMAGE_BASE}${event.image_url}` }}
+              source={{ uri: event.image_url }}
               style={styles.image}
               resizeMode="cover"
             />

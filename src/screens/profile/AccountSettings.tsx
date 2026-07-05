@@ -289,14 +289,14 @@ export default function AccountScreen() {
             icon="document-text-outline"
             iconBg="#5C4F42"
             label="Privacy Policy"
-            onPress={() => Linking.openURL('https://spotlight.app/privacy')}
+            onPress={() => Linking.openURL('https://spotlightinfo.in/privacy')}
           />
           <Divider />
           <SettingsRow
             icon="shield-checkmark-outline"
             iconBg="#5C4F42"
             label="Terms of Service"
-            onPress={() => Linking.openURL('https://spotlight.app/terms')}
+            onPress={() => Linking.openURL('https://spotlightinfo.in/terms')}
           />
           <Divider />
           <SettingsRow
