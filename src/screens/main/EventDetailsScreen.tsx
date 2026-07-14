@@ -20,6 +20,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
 import HostedByCard from '../../components/HostedbyCard';
 import { useToast } from '../../context/ToastContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 function formatDuration(minutes: number) {
   if (!minutes) return null;
@@ -66,6 +67,8 @@ export default function EventDetailsScreen() {
 
   const [loading, setLoading] = useState(false);
   const [joined, setJoined] = useState(event.joined);
+
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     api
@@ -289,7 +292,7 @@ export default function EventDetailsScreen() {
           <View style={styles.bottomSpace} />
         </ScrollView>
 
-        <View style={styles.stickyFooter}>
+        <View style={[styles.stickyFooter, { bottom: insets.bottom }]}>
           <View style={styles.footerPriceBlock}>
             <AppText style={styles.footerPrice}>
               {event.price > 0 ? `₹${event.price}` : 'Free'}
@@ -431,7 +434,6 @@ const styles = StyleSheet.create({
   },
   stickyFooter: {
     position: 'absolute',
-    bottom: 0,
     left: 0,
     right: 0,
     backgroundColor: Colors.light.surface,

@@ -31,6 +31,7 @@ import CitySheet from '../../components/CitySheet';
 import PageHeader from '../../components/PageHeader';
 import { tagColor } from '../../constants/values';
 import { useToast } from '../../context/ToastContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const TagPill = memo(function TagPill({
   tag,
@@ -317,6 +318,7 @@ export default function EventsScreen() {
   const [pageLoading, setPageLoading] = useState(false);
 
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const insets = useSafeAreaInsets();
 
   const listData = initialLoad ? SKELETON_DATA : allEvents;
   const renderItem = useCallback(
@@ -672,7 +674,7 @@ export default function EventsScreen() {
       />
 
       <TouchableOpacity
-        style={styles.fab}
+        style={[styles.fab, { bottom: insets.bottom + Spacing.lg }]}
         onPress={() => navigation.navigate('CreateEvent')}
         activeOpacity={0.9}
       >
@@ -748,7 +750,6 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     right: Spacing.xl,
-    bottom: Spacing.xxl,
     backgroundColor: Colors.light.primary,
     width: 60,
     height: 60,

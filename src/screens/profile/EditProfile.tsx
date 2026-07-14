@@ -186,7 +186,7 @@ export default function EditProfileScreen() {
   return (
     <KeyboardAvoidingView
       style={styles.keyboardCont}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <Screen>
         <StatusBar barStyle="dark-content" backgroundColor="#F5F0E8" />

@@ -5,8 +5,6 @@ import {
   FlatList,
   TextInput,
   TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
   StatusBar,
   ActivityIndicator,
   Image,
@@ -15,10 +13,13 @@ import {
 } from 'react-native';
 import AppText from '../../components/AppText';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import { Spacing } from '../../constants/layout';
+import { Radius, Spacing } from '../../constants/layout';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useEventChat, ChatMessage } from '../../hooks/useEventChat';
 import { useAuth } from '../../context/AuthContext';
+import Screen from '../../components/Screen';
+import PageHeader from '../../components/PageHeader';
+import Colors from '../../constants/colors';
 
 const AVATAR_COLORS = ['#FF6B35', '#E63946', '#2EC4B6', '#8338EC', '#FFBE0B'];
 function avatarColor(id: string) {
@@ -281,48 +282,11 @@ export default function EventChatScreen() {
   const canSend = status === 'ready' && inputText.trim().length > 0;
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <View style={styles.container}>
-        <StatusBar barStyle="dark-content" backgroundColor="#F5F0E8" />
+    <>
+      <StatusBar barStyle="dark-content" backgroundColor="#F5F0E8" />
+      <Screen>
+        <PageHeader title={event.title} />
 
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backBtn}
-            onPress={() => navigation.goBack()}
-            activeOpacity={0.7}
-          >
-            <Ionicons name="arrow-back" size={20} color="#1A0A00" />
-          </TouchableOpacity>
-          <View style={styles.headerCenter}>
-            <AppText style={styles.headerTitle} numberOfLines={1}>
-              {event.title}
-            </AppText>
-            <View style={styles.statusRow}>
-              <View
-                style={[
-                  styles.dot,
-                  {
-                    backgroundColor: status === 'ready' ? '#2EC4B6' : '#C4BAB0',
-                  },
-                ]}
-              />
-              <AppText style={styles.statusText}>
-                {isConnecting
-                  ? 'Connecting...'
-                  : status === 'ready'
-                  ? 'Live'
-                  : 'Disconnected'}
-              </AppText>
-            </View>
-          </View>
-          <View style={{ width: 38 }} />
-        </View>
-
-        {/* Messages */}
         {isConnecting ? (
           <View style={styles.loadingWrap}>
             <ActivityIndicator color="#FF6B35" size="large" />
@@ -375,47 +339,16 @@ export default function EventChatScreen() {
             </TouchableOpacity>
           </Animated.View>
         </View>
-      </View>
-    </KeyboardAvoidingView>
+      </Screen>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F0E8' },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: Spacing.md,
-    paddingTop: 52,
-    paddingBottom: 12,
-    backgroundColor: '#F5F0E8',
-    borderBottomWidth: 1,
-    borderBottomColor: '#EDE8DF',
+  kavWrapper: {
+    flex: 1,
+    backgroundColor: Colors.light.surface,
   },
-  backBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#F0EBE3',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerCenter: { flex: 1 },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: '#1A0A00',
-    letterSpacing: -0.2,
-  },
-  statusRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginTop: 2,
-  },
-  dot: { width: 6, height: 6, borderRadius: 3 },
-  statusText: { fontSize: 11, color: '#8A7B6B', fontWeight: '500' },
   loadingWrap: {
     flex: 1,
     alignItems: 'center',
@@ -450,29 +383,27 @@ const styles = StyleSheet.create({
     gap: 10,
     paddingHorizontal: Spacing.md,
     paddingVertical: 10,
-    paddingBottom: Platform.OS === 'ios' ? 28 : 10,
-    backgroundColor: '#FFFDF8',
-    borderTopWidth: 1,
-    borderTopColor: '#EDE8DF',
+    borderTopWidth: 2,
+    borderTopColor: Colors.light.border,
   },
   input: {
     flex: 1,
     backgroundColor: '#F5F0E8',
-    borderRadius: 22,
+    borderRadius: Radius.md,
     borderWidth: 1.5,
-    borderColor: '#EDE8DF',
+    borderColor: Colors.light.border,
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 14,
     fontWeight: '500',
-    color: '#1A0A00',
+    color: Colors.light.primaryText,
     maxHeight: 120,
     lineHeight: 20,
   },
   sendBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: Radius.pill,
     backgroundColor: '#FF6B35',
     alignItems: 'center',
     justifyContent: 'center',

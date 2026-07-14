@@ -68,7 +68,7 @@ export default function CitySheet({
     >
       <KeyboardAvoidingView
         style={cs.kavWrapper}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <TouchableOpacity
           style={cs.backdrop}
