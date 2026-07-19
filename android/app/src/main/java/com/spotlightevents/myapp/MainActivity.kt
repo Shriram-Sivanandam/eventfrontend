@@ -1,4 +1,4 @@
-package com.districtfrontend
+package com.spotlightevents.myapp
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate

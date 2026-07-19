@@ -279,7 +279,7 @@ export default function AccountScreen() {
             label="Rate Spotlight"
             sublabel="Enjoying the app? Leave us a review"
             onPress={() =>
-              Linking.openURL('market://details?id=com.spotlight.app')
+              Linking.openURL('market://details?id=com.spotlightevents.myapp')
             }
           />
         </Card>
