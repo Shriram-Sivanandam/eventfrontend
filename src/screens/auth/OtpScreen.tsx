@@ -11,7 +11,6 @@ import {
   StatusBar,
 } from 'react-native';
 import AppText from '../../components/AppText';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/AuthContext';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import api from '../../api/client';
@@ -127,6 +126,7 @@ export default function OtpScreen() {
   const [focusedIdx, setFocusedIdx] = useState(0);
   const [cooldown, setCooldown] = useState(0);
   const [resending, setResending] = useState(false);
+  const { setOnboardingComplete, setUser } = useAuth();
 
   const inputRef = useRef<TextInput>(null);
 
@@ -189,8 +189,15 @@ export default function OtpScreen() {
       setOtpError('');
       try {
         const res = await api.post('/auth/verify-otp', { email, otp: code });
-        await AsyncStorage.setItem('token', res.data.token);
-        setToken(res.data.token);
+
+        api.defaults.headers.common.Authorization = `Bearer ${res.data.token}`;
+
+        const meRes = await api.get('/auth/me');
+
+        setOnboardingComplete(res.data.onboarding_complete ?? false);
+        setUser(meRes.data);
+
+        await setToken(res.data.token);
       } catch {
         setOtpError('Incorrect or expired code. Try again.');
         Animated.sequence([
@@ -222,7 +229,7 @@ export default function OtpScreen() {
         setLoading(false);
       }
     },
-    [email, setToken, slideAnim],
+    [email, setToken, setOnboardingComplete, setUser, slideAnim],
   );
 
   useEffect(() => {

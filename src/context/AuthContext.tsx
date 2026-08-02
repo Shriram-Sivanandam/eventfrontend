@@ -9,6 +9,7 @@ type AuthContextType = {
   setOnboardingComplete: (v: boolean) => void;
   isLoading: boolean;
   user: any;
+  setUser: (user: any) => void;
 };
 
 const AuthContext = createContext<AuthContextType>({
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
   setOnboardingComplete: () => {},
   isLoading: true,
   user: null,
+  setUser: () => {},
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -69,6 +71,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setOnboardingComplete,
         isLoading,
         user,
+        setUser,
       }}
     >
       {children}
