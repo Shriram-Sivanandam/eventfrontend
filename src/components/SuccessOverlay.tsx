@@ -108,14 +108,12 @@ export default function SuccessOverlay({
   useEffect(() => {
     if (!visible) return;
 
-    // Reset
     bgOpacity.setValue(0);
     emojiScale.setValue(0);
     emojiRotate.setValue(-0.2);
     textOpacity.setValue(0);
     textSlide.setValue(16);
 
-    // Animate in
     Animated.parallel([
       Animated.timing(bgOpacity, {
         toValue: 1,
@@ -149,7 +147,6 @@ export default function SuccessOverlay({
       ]).start();
     });
 
-    // Auto-dismiss
     const timer = setTimeout(() => {
       Animated.timing(bgOpacity, {
         toValue: 0,

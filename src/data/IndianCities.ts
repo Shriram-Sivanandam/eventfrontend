@@ -1,9 +1,4 @@
-// Static list of Indian cities for the city picker.
-// Covers all major metros, state capitals, and well-known tier-2 cities.
-// No API needed — this list is stable and fast to search locally.
-
 export const INDIAN_CITIES: string[] = [
-  // Metros
   'Mumbai',
   'Delhi',
   'Bangalore',
@@ -14,8 +9,6 @@ export const INDIAN_CITIES: string[] = [
   'Pune',
   'Surat',
   'Jaipur',
-
-  // Major cities
   'Lucknow',
   'Kanpur',
   'Nagpur',

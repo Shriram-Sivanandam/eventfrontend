@@ -115,7 +115,6 @@ const sr = StyleSheet.create({
   },
 });
 
-// ── Host avatar ────────────────────────────────────────────────────────────────
 function HostAvatar({
   name,
   avatarUrl,
@@ -154,7 +153,6 @@ const ha = StyleSheet.create({
   initials: { fontSize: 16, fontWeight: '900', color: '#fff' },
 });
 
-// ── Main component ─────────────────────────────────────────────────────────────
 export default function RatingModal({
   visible,
   onClose,
@@ -165,7 +163,6 @@ export default function RatingModal({
   rateeAvatar,
   ratingType,
 }: Props) {
-  // Resolve who's being rated — defaults to the host if no override given
   const resolvedRateeId = rateeId ?? event.host_user_id;
   const resolvedRateeName = rateeName ?? event.host_name;
   const resolvedRateeAvatar = rateeAvatar ?? event.host_avatar;
